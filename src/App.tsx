@@ -12,6 +12,7 @@ import DonorProfile from "./pages/DonorProfile";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
+import PublicDonorView from "./pages/PublicDonorView";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
@@ -41,6 +42,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/auth" element={<Auth />} />
       <Route path="/" element={<Index />} />
+      <Route path="/my-donations/:id" element={<PublicDonorView />} />
       <Route
         path="/donors"
         element={
