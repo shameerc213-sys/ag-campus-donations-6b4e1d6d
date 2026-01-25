@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { User, IndianRupee, Calendar, Plus, Phone, MapPin } from 'lucide-react';
+import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Copy, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { z } from 'zod';
 
@@ -41,7 +41,31 @@ const DonorProfile = () => {
   const [newDate, setNewDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [newNotes, setNewNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+
+  const getPublicLink = () => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/my-donations/${id}`;
+  };
+
+  const copyPublicLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getPublicLink());
+      setCopied(true);
+      toast({
+        title: 'ലിങ്ക് കോപ്പി ചെയ്തു!',
+        description: 'ദാതാവിന് ഈ ലിങ്ക് ഷെയർ ചെയ്യാം',
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'ലിങ്ക് കോപ്പി ചെയ്യാൻ കഴിഞ്ഞില്ല',
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -200,6 +224,31 @@ const DonorProfile = () => {
           <div className="mt-4 p-4 bg-primary/10 rounded-lg">
             <p className="text-sm text-muted-foreground">ആകെ സംഭാവന</p>
             <p className="text-2xl font-bold text-primary">{formatCurrency(totalDonations)}</p>
+          </div>
+
+          {/* Share Link Button */}
+          <div className="mt-4">
+            <Button
+              onClick={copyPublicLink}
+              variant="outline"
+              className="w-full"
+              size="sm"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 mr-2 text-secondary" />
+                  കോപ്പി ചെയ്തു!
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 mr-2" />
+                  ദാതാവിന് ലിങ്ക് ഷെയർ ചെയ്യുക
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              ഈ ലിങ്ക് വഴി ദാതാവിന് സ്വന്തം സംഭാവനകൾ കാണാം
+            </p>
           </div>
         </CardContent>
       </Card>
