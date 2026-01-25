@@ -1,0 +1,208 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { IndianRupee, Calendar, TrendingUp } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+
+interface ReportData {
+  total: number;
+  count: number;
+  donations: Array<{
+    id: string;
+    amount: number;
+    donation_date: string;
+    donor_name: string;
+  }>;
+}
+
+const Reports = () => {
+  const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [reportData, setReportData] = useState<ReportData>({ total: 0, count: 0, donations: [] });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchReport();
+  }, [startDate, endDate]);
+
+  const fetchReport = async () => {
+    setLoading(true);
+    try {
+      const { data } = await supabase
+        .from('donations')
+        .select(`
+          id,
+          amount,
+          donation_date,
+          donors (name)
+        `)
+        .gte('donation_date', startDate)
+        .lte('donation_date', endDate)
+        .order('donation_date', { ascending: false });
+
+      const donations = data?.map(d => ({
+        id: d.id,
+        amount: Number(d.amount),
+        donation_date: d.donation_date,
+        donor_name: (d.donors as any)?.name || 'Unknown',
+      })) || [];
+
+      const total = donations.reduce((sum, d) => sum + d.amount, 0);
+
+      setReportData({
+        total,
+        count: donations.length,
+        donations,
+      });
+    } catch (error) {
+      console.error('Error fetching report:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setPresetDates = (preset: 'week' | 'month' | 'year') => {
+    const today = new Date();
+    switch (preset) {
+      case 'week':
+        setStartDate(format(startOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
+        setEndDate(format(endOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
+        break;
+      case 'month':
+        setStartDate(format(startOfMonth(today), 'yyyy-MM-dd'));
+        setEndDate(format(endOfMonth(today), 'yyyy-MM-dd'));
+        break;
+      case 'year':
+        setStartDate(format(startOfYear(today), 'yyyy-MM-dd'));
+        setEndDate(format(endOfYear(today), 'yyyy-MM-dd'));
+        break;
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ml-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-foreground">റിപ്പോർട്ടുകൾ</h2>
+
+      {/* Date Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            കാലയളവ് തിരഞ്ഞെടുക്കുക
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Quick Presets */}
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => setPresetDates('week')}>
+              ഈ ആഴ്ച
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPresetDates('month')}>
+              ഈ മാസം
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPresetDates('year')}>
+              ഈ വർഷം
+            </Button>
+          </div>
+
+          {/* Custom Date Range */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start-date">തുടക്ക തീയതി</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end-date">അവസാന തീയതി</Label>
+              <Input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Summary Card */}
+      <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">തിരഞ്ഞെടുത്ത കാലയളവിലെ ആകെ</p>
+              <p className="text-3xl font-bold text-primary mt-1">
+                {formatCurrency(reportData.total)}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {reportData.count} സംഭാവനകൾ
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Donation List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">സംഭാവനകളുടെ വിശദാംശങ്ങൾ</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : reportData.donations.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">
+              ഈ കാലയളവിൽ സംഭാവനകൾ ഇല്ല
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {reportData.donations.map((donation) => (
+                <div
+                  key={donation.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <IndianRupee className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{donation.donor_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="font-bold text-primary">{formatCurrency(donation.amount)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Reports;
