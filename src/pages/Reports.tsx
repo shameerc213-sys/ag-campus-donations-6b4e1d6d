@@ -64,9 +64,14 @@ const Reports = () => {
     }
   };
 
-  const setPresetDates = (preset: 'week' | 'month' | 'year') => {
+  const setPresetDates = (preset: 'today' | 'week' | 'month' | 'year') => {
     const today = new Date();
     switch (preset) {
+      case 'today':
+        const todayStr = format(today, 'yyyy-MM-dd');
+        setStartDate(todayStr);
+        setEndDate(todayStr);
+        break;
       case 'week':
         setStartDate(format(startOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
         setEndDate(format(endOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
@@ -80,6 +85,11 @@ const Reports = () => {
         setEndDate(format(endOfYear(today), 'yyyy-MM-dd'));
         break;
     }
+  };
+
+  const setSpecificDate = (date: string) => {
+    setStartDate(date);
+    setEndDate(date);
   };
 
   const formatCurrency = (amount: number) => {
@@ -105,6 +115,9 @@ const Reports = () => {
         <CardContent className="space-y-4">
           {/* Quick Presets */}
           <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => setPresetDates('today')}>
+              ഇന്ന്
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setPresetDates('week')}>
               ഈ ആഴ്ച
             </Button>
@@ -114,6 +127,17 @@ const Reports = () => {
             <Button variant="outline" size="sm" onClick={() => setPresetDates('year')}>
               ഈ വർഷം
             </Button>
+          </div>
+
+          {/* Specific Date Picker */}
+          <div className="space-y-2">
+            <Label htmlFor="specific-date">ഒരു പ്രത്യേക ദിവസം തിരഞ്ഞെടുക്കുക</Label>
+            <Input
+              id="specific-date"
+              type="date"
+              onChange={(e) => setSpecificDate(e.target.value)}
+              className="max-w-xs"
+            />
           </div>
 
           {/* Custom Date Range */}
