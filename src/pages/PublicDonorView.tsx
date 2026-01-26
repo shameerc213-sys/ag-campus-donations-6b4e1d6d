@@ -138,10 +138,8 @@ const PublicDonorView = () => {
             </div>
             
             <div className="mt-4 p-4 bg-primary/10 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">ആകെ സംഭാവന</p>
-              <p className="text-3xl font-bold text-primary">{formatCurrency(totalDonations)}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {donations.length} സംഭാവന{donations.length !== 1 ? 'കൾ' : ''}
+              <p className="text-sm text-muted-foreground">
+                {donations.length} സംഭാവന{donations.length !== 1 ? 'കൾ' : ''} രേഖപ്പെടുത്തിയിട്ടുണ്ട്
               </p>
             </div>
           </CardContent>

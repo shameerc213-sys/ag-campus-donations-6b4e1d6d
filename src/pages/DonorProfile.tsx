@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Copy, Check } from 'lucide-react';
+import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { z } from 'zod';
 
@@ -42,6 +42,11 @@ const DonorProfile = () => {
   const [newNotes, setNewNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const getPublicLink = () => {
@@ -176,6 +181,91 @@ const DonorProfile = () => {
   };
 
   const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
+
+  const startEdit = (donation: Donation) => {
+    setEditingDonation(donation);
+    setEditAmount(donation.amount.toString());
+    setEditDate(donation.donation_date);
+    setEditNotes(donation.notes || '');
+  };
+
+  const cancelEdit = () => {
+    setEditingDonation(null);
+    setEditAmount('');
+    setEditDate('');
+    setEditNotes('');
+  };
+
+  const handleUpdateDonation = async () => {
+    if (!editingDonation) return;
+
+    const amount = parseFloat(editAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: 'Error',
+        description: 'തുക 0-ൽ കൂടുതൽ ആയിരിക്കണം',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('donations')
+        .update({
+          amount: amount,
+          donation_date: editDate,
+          notes: editNotes.trim() || null,
+        })
+        .eq('id', editingDonation.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'വിജയകരം!',
+        description: 'സംഭാവന അപ്ഡേറ്റ് ചെയ്തു',
+      });
+
+      cancelEdit();
+      fetchDonorData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteDonation = async (donationId: string) => {
+    setDeletingId(donationId);
+    try {
+      const { error } = await supabase
+        .from('donations')
+        .delete()
+        .eq('id', donationId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'വിജയകരം!',
+        description: 'സംഭാവന നീക്കം ചെയ്തു',
+      });
+
+      fetchDonorData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -335,29 +425,99 @@ const DonorProfile = () => {
           ) : (
             <div className="space-y-3">
               {donations.map((donation) => (
-                <div
-                  key={donation.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-secondary/20 rounded-full flex items-center justify-center">
-                      <IndianRupee className="w-4 h-4 text-secondary" />
+                <div key={donation.id}>
+                  {editingDonation?.id === donation.id ? (
+                    <div className="p-3 bg-muted/50 rounded-lg space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-amount">തുക (₹)</Label>
+                        <Input
+                          id="edit-amount"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editAmount}
+                          onChange={(e) => setEditAmount(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-date">തീയതി</Label>
+                        <Input
+                          id="edit-date"
+                          type="date"
+                          value={editDate}
+                          onChange={(e) => setEditDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-notes">കുറിപ്പുകൾ</Label>
+                        <Input
+                          id="edit-notes"
+                          value={editNotes}
+                          onChange={(e) => setEditNotes(e.target.value)}
+                          placeholder="ഐച്ഛികം..."
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={handleUpdateDonation}
+                          disabled={submitting}
+                        >
+                          {submitting ? 'കാത്തിരിക്കുക...' : 'സേവ്'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={cancelEdit}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-foreground">
-                        {formatCurrency(donation.amount)}
-                      </p>
-                      {donation.notes && (
-                        <p className="text-xs text-muted-foreground">{donation.notes}</p>
-                      )}
+                  ) : (
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-secondary/20 rounded-full flex items-center justify-center">
+                          <IndianRupee className="w-4 h-4 text-secondary" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-foreground">
+                            {formatCurrency(donation.amount)}
+                          </p>
+                          {donation.notes && (
+                            <p className="text-xs text-muted-foreground">{donation.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => startEdit(donation)}
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteDonation(donation.id)}
+                            disabled={deletingId === donation.id}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
-                    </p>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
