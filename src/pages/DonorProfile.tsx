@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { z } from 'zod';
 
 interface Donor {
@@ -33,6 +34,7 @@ const donationSchema = z.object({
 
 const DonorProfile = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [donor, setDonor] = useState<Donor | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +49,11 @@ const DonorProfile = () => {
   const [editDate, setEditDate] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingDonor, setEditingDonor] = useState(false);
+  const [editDonorName, setEditDonorName] = useState('');
+  const [editDonorPhone, setEditDonorPhone] = useState('');
+  const [editDonorAddress, setEditDonorAddress] = useState('');
+  const [editDonorNotes, setEditDonorNotes] = useState('');
   const { toast } = useToast();
 
   const getPublicLink = () => {
@@ -267,6 +274,104 @@ const DonorProfile = () => {
     }
   };
 
+  const startEditDonor = () => {
+    if (donor) {
+      setEditDonorName(donor.name);
+      setEditDonorPhone(donor.phone || '');
+      setEditDonorAddress(donor.address || '');
+      setEditDonorNotes(donor.notes || '');
+      setEditingDonor(true);
+    }
+  };
+
+  const cancelEditDonor = () => {
+    setEditingDonor(false);
+    setEditDonorName('');
+    setEditDonorPhone('');
+    setEditDonorAddress('');
+    setEditDonorNotes('');
+  };
+
+  const handleUpdateDonor = async () => {
+    if (!donor || !editDonorName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'പേര് നൽകുക',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('donors')
+        .update({
+          name: editDonorName.trim(),
+          phone: editDonorPhone.trim() || null,
+          address: editDonorAddress.trim() || null,
+          notes: editDonorNotes.trim() || null,
+        })
+        .eq('id', donor.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'വിജയകരം!',
+        description: 'ദാതാവിന്റെ വിവരങ്ങൾ അപ്ഡേറ്റ് ചെയ്തു',
+      });
+
+      cancelEditDonor();
+      fetchDonorData();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteDonor = async () => {
+    if (!donor) return;
+
+    setSubmitting(true);
+    try {
+      // First delete all donations for this donor
+      const { error: donationsError } = await supabase
+        .from('donations')
+        .delete()
+        .eq('donor_id', donor.id);
+
+      if (donationsError) throw donationsError;
+
+      // Then delete the donor
+      const { error: donorError } = await supabase
+        .from('donors')
+        .delete()
+        .eq('id', donor.id);
+
+      if (donorError) throw donorError;
+
+      toast({
+        title: 'വിജയകരം!',
+        description: 'ദാതാവിനെ നീക്കം ചെയ്തു',
+      });
+
+      navigate('/donors');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -290,56 +395,133 @@ const DonorProfile = () => {
       {/* Donor Info Card */}
       <Card className="border-t-4 border-t-primary">
         <CardContent className="pt-6">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-primary" />
+          {editingDonor ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="donor-name">പേര് *</Label>
+                <Input
+                  id="donor-name"
+                  value={editDonorName}
+                  onChange={(e) => setEditDonorName(e.target.value)}
+                  placeholder="ദാതാവിന്റെ പേര്"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="donor-phone">ഫോൺ</Label>
+                <Input
+                  id="donor-phone"
+                  value={editDonorPhone}
+                  onChange={(e) => setEditDonorPhone(e.target.value)}
+                  placeholder="ഫോൺ നമ്പർ"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="donor-address">വിലാസം</Label>
+                <Input
+                  id="donor-address"
+                  value={editDonorAddress}
+                  onChange={(e) => setEditDonorAddress(e.target.value)}
+                  placeholder="വിലാസം"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="donor-notes">കുറിപ്പുകൾ</Label>
+                <Input
+                  id="donor-notes"
+                  value={editDonorNotes}
+                  onChange={(e) => setEditDonorNotes(e.target.value)}
+                  placeholder="കുറിപ്പുകൾ"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleUpdateDonor} disabled={submitting} className="flex-1">
+                  {submitting ? 'കാത്തിരിക്കുക...' : 'സേവ് ചെയ്യുക'}
+                </Button>
+                <Button variant="outline" onClick={cancelEditDonor}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-foreground">{donor.name}</h2>
-              {donor.phone && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                  <Phone className="w-3 h-3" />
-                  {donor.phone}
-                </p>
-              )}
-              {donor.address && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                  <MapPin className="w-3 h-3" />
-                  {donor.address}
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <div className="mt-4 p-4 bg-primary/10 rounded-lg">
-            <p className="text-sm text-muted-foreground">ആകെ സംഭാവന</p>
-            <p className="text-2xl font-bold text-primary">{formatCurrency(totalDonations)}</p>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-foreground">{donor.name}</h2>
+                  {donor.phone && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <Phone className="w-3 h-3" />
+                      {donor.phone}
+                    </p>
+                  )}
+                  {donor.address && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <MapPin className="w-3 h-3" />
+                      {donor.address}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={startEditDonor}>
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>ദാതാവിനെ നീക്കം ചെയ്യണോ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          ഈ ദാതാവിനെയും എല്ലാ സംഭാവനകളും ശാശ്വതമായി നീക്കം ചെയ്യും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>റദ്ദാക്കുക</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteDonor} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          നീക്കം ചെയ്യുക
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-4 bg-primary/10 rounded-lg">
+                <p className="text-sm text-muted-foreground">ആകെ സംഭാവന</p>
+                <p className="text-2xl font-bold text-primary">{formatCurrency(totalDonations)}</p>
+              </div>
 
-          {/* Share Link Button */}
-          <div className="mt-4">
-            <Button
-              onClick={copyPublicLink}
-              variant="outline"
-              className="w-full"
-              size="sm"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 mr-2 text-secondary" />
-                  കോപ്പി ചെയ്തു!
-                </>
-              ) : (
-                <>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  ദാതാവിന് ലിങ്ക് ഷെയർ ചെയ്യുക
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              ഈ ലിങ്ക് വഴി ദാതാവിന് സ്വന്തം സംഭാവനകൾ കാണാം
-            </p>
-          </div>
+              {/* Share Link Button */}
+              <div className="mt-4">
+                <Button
+                  onClick={copyPublicLink}
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4 mr-2 text-secondary" />
+                      കോപ്പി ചെയ്തു!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      ദാതാവിന് ലിങ്ക് ഷെയർ ചെയ്യുക
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  ഈ ലിങ്ക് വഴി ദാതാവിന് സ്വന്തം സംഭാവനകൾ കാണാം
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
