@@ -137,9 +137,13 @@ const PublicDonorView = () => {
               </div>
             </div>
             
-            <div className="mt-4 p-4 bg-primary/10 rounded-lg text-center">
-              <p className="text-sm text-muted-foreground">
-                {donations.length} സംഭാവന{donations.length !== 1 ? 'കൾ' : ''} രേഖപ്പെടുത്തിയിട്ടുണ്ട്
+            {/* Thank you message */}
+            <div className="mt-4 p-4 bg-accent/50 rounded-lg text-center space-y-2">
+              <p className="text-sm text-foreground leading-relaxed">
+                അജ്മീർ ഗേറ്റിന് താങ്കൾ നൽകിവരുന്ന ഉദാരമായ സംഭാവനകൾക്ക് ഹൃദയം നിറഞ്ഞ നന്ദി അറിയിക്കുന്നു.
+              </p>
+              <p className="text-sm text-foreground leading-relaxed">
+                അല്ലാഹു താങ്കളുടെ സമ്പത്തിലും കുടുംബത്തിലും ബറക്കത്ത് ചെയ്യട്ടെ. പകരമായി പരലോകത്ത് വലിയ പ്രതിഫലം നൽകട്ടെ ആമീൻ
               </p>
             </div>
           </CardContent>
@@ -189,13 +193,6 @@ const PublicDonorView = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <div className="text-center py-4">
-          <p className="text-xs text-muted-foreground">
-            നിങ്ങളുടെ സഹായത്തിന് നന്ദി! 🙏
-          </p>
-        </div>
       </div>
     </div>
   );

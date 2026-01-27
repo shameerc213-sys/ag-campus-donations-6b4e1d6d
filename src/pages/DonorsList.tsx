@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, User, IndianRupee } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, User, IndianRupee, Download, MapPin } from 'lucide-react';
 
 interface Donor {
   id: string;
   name: string;
   phone: string | null;
+  address: string | null;
   total_donations: number;
 }
 
@@ -25,7 +27,7 @@ const DonorsList = () => {
     try {
       const { data: donorsData } = await supabase
         .from('donors')
-        .select('id, name, phone')
+        .select('id, name, phone, address')
         .order('name');
 
       if (donorsData) {
@@ -52,7 +54,8 @@ const DonorsList = () => {
 
   const filteredDonors = donors.filter((donor) =>
     donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (donor.phone && donor.phone.includes(searchQuery))
+    (donor.phone && donor.phone.includes(searchQuery)) ||
+    (donor.address && donor.address.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const formatCurrency = (amount: number) => {
@@ -61,6 +64,26 @@ const DonorsList = () => {
       currency: 'INR',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const downloadFilteredList = () => {
+    if (filteredDonors.length === 0) return;
+
+    const csvContent = [
+      ['പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന'].join(','),
+      ...filteredDonors.map(donor => [
+        `"${donor.name}"`,
+        `"${donor.phone || ''}"`,
+        `"${donor.address || ''}"`,
+        donor.total_donations
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `donors_${searchQuery || 'all'}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   if (loading) {
@@ -76,14 +99,32 @@ const DonorsList = () => {
       <h2 className="text-2xl font-bold text-foreground">ദാതാക്കൾ</h2>
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
-          placeholder="പേര് അല്ലെങ്കിൽ ഫോൺ നമ്പർ തിരയുക..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      <div className="space-y-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="പേര്, ഫോൺ നമ്പർ, അല്ലെങ്കിൽ വിലാസം തിരയുക..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {searchQuery && filteredDonors.length > 0 && (
+          <div className="flex items-center justify-between bg-accent/50 p-2 rounded-lg">
+            <span className="text-sm text-muted-foreground">
+              {filteredDonors.length} ഫലങ്ങൾ കണ്ടെത്തി
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={downloadFilteredList}
+              className="flex items-center gap-1"
+            >
+              <Download className="w-4 h-4" />
+              ഡൗൺലോഡ്
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Donors List */}
@@ -111,6 +152,12 @@ const DonorsList = () => {
                         <p className="font-semibold text-foreground">{donor.name}</p>
                         {donor.phone && (
                           <p className="text-sm text-muted-foreground">{donor.phone}</p>
+                        )}
+                        {donor.address && (
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {donor.address}
+                          </p>
                         )}
                       </div>
                     </div>
