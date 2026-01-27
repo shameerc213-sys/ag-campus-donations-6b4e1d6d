@@ -49,6 +49,7 @@ const DonorProfile = () => {
   const [editDate, setEditDate] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
   const [editingDonor, setEditingDonor] = useState(false);
   const [editDonorName, setEditDonorName] = useState('');
   const [editDonorPhone, setEditDonorPhone] = useState('');
@@ -247,13 +248,15 @@ const DonorProfile = () => {
     }
   };
 
-  const handleDeleteDonation = async (donationId: string) => {
-    setDeletingId(donationId);
+  const handleDeleteDonation = async () => {
+    if (!donationToDelete) return;
+    
+    setDeletingId(donationToDelete);
     try {
       const { error } = await supabase
         .from('donations')
         .delete()
-        .eq('id', donationId);
+        .eq('id', donationToDelete);
 
       if (error) throw error;
 
@@ -271,6 +274,7 @@ const DonorProfile = () => {
       });
     } finally {
       setDeletingId(null);
+      setDonationToDelete(null);
     }
   };
 
@@ -687,15 +691,36 @@ const DonorProfile = () => {
                           >
                             <Pencil className="w-3 h-3" />
                           </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteDonation(donation.id)}
-                            disabled={deletingId === donation.id}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                          <AlertDialog open={donationToDelete === donation.id} onOpenChange={(open) => !open && setDonationToDelete(null)}>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => setDonationToDelete(donation.id)}
+                                disabled={deletingId === donation.id}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>സംഭാവന നീക്കം ചെയ്യണോ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  ₹{donation.amount} സംഭാവന ശാശ്വതമായി നീക്കം ചെയ്യും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>റദ്ദാക്കുക</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={handleDeleteDonation} 
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  നീക്കം ചെയ്യുക
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>
