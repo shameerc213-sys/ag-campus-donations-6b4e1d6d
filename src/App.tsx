@@ -4,15 +4,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { DonorAuthProvider } from "@/contexts/DonorAuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import DonorsList from "./pages/DonorsList";
 import AddDonor from "./pages/AddDonor";
 import DonorProfile from "./pages/DonorProfile";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import PublicDonorView from "./pages/PublicDonorView";
+import DonorLogin from "./pages/donor-portal/DonorLogin";
+import DonorHome from "./pages/donor-portal/DonorHome";
+import DonorAbout from "./pages/donor-portal/DonorAbout";
+import DonorGallery from "./pages/donor-portal/DonorGallery";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
@@ -43,6 +50,13 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/" element={<Index />} />
       <Route path="/my-donations/:id" element={<PublicDonorView />} />
+      
+      {/* Donor Portal Routes */}
+      <Route path="/portal" element={<DonorLogin />} />
+      <Route path="/portal/home" element={<DonorHome />} />
+      <Route path="/portal/about" element={<DonorAbout />} />
+      <Route path="/portal/gallery" element={<DonorGallery />} />
+      
       <Route
         path="/donors"
         element={
@@ -75,6 +89,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -83,13 +105,17 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
+      <LanguageProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <DonorAuthProvider>
+              <AppRoutes />
+            </DonorAuthProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
