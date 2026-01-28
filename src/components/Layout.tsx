@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Home, Users, PlusCircle, LogOut, TrendingUp } from 'lucide-react';
+import { Home, Users, PlusCircle, LogOut, TrendingUp, Settings } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,8 +15,9 @@ const Layout = ({ children }: LayoutProps) => {
   const navItems = [
     { path: '/', icon: Home, label: 'ഹോം' },
     { path: '/donors', icon: Users, label: 'ദാതാക്കൾ' },
-    { path: '/add-donor', icon: PlusCircle, label: 'പുതിയ ദാതാവ്' },
-    { path: '/reports', icon: TrendingUp, label: 'റിപ്പോർട്ടുകൾ' },
+    { path: '/add-donor', icon: PlusCircle, label: 'ദാതാവ്+' },
+    { path: '/reports', icon: TrendingUp, label: 'റിപ്പോർട്ട്' },
+    { path: '/settings', icon: Settings, label: 'സെറ്റിംഗ്സ്' },
   ];
 
   return (
