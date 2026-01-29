@@ -20,6 +20,7 @@ import DonorLogin from "./pages/donor-portal/DonorLogin";
 import DonorHome from "./pages/donor-portal/DonorHome";
 import DonorAbout from "./pages/donor-portal/DonorAbout";
 import DonorGallery from "./pages/donor-portal/DonorGallery";
+import PortalInstall from "./pages/donor-portal/PortalInstall";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
@@ -53,6 +54,7 @@ const AppRoutes = () => {
       
       {/* Donor Portal Routes */}
       <Route path="/portal" element={<DonorLogin />} />
+      <Route path="/portal/install" element={<PortalInstall />} />
       <Route path="/portal/home" element={<DonorHome />} />
       <Route path="/portal/about" element={<DonorAbout />} />
       <Route path="/portal/gallery" element={<DonorGallery />} />

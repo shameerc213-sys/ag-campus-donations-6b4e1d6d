@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon } from 'lucide-react';
+import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon, MapPin, Youtube, Instagram, Facebook } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,10 +25,12 @@ interface OrgSettings {
   org_phone: string;
   org_email: string;
   org_description: string;
-  org_location_lat: string;
-  org_location_lng: string;
+  org_location_url: string;
   password_prefix: string;
   default_language: string;
+  social_youtube: string;
+  social_instagram: string;
+  social_facebook: string;
 }
 
 interface MediaItem {
@@ -46,10 +48,12 @@ const Settings = () => {
     org_phone: '',
     org_email: '',
     org_description: '',
-    org_location_lat: '',
-    org_location_lng: '',
+    org_location_url: '',
     password_prefix: 'OM',
     default_language: 'ml',
+    social_youtube: '',
+    social_instagram: '',
+    social_facebook: '',
   });
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -325,24 +329,65 @@ const Settings = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="org_location_lat">Latitude</Label>
-                  <Input
-                    id="org_location_lat"
-                    value={settings.org_location_lat}
-                    onChange={(e) => setSettings(prev => ({ ...prev, org_location_lat: e.target.value }))}
-                    placeholder="11.2588"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org_location_lng">Longitude</Label>
-                  <Input
-                    id="org_location_lng"
-                    value={settings.org_location_lng}
-                    onChange={(e) => setSettings(prev => ({ ...prev, org_location_lng: e.target.value }))}
-                    placeholder="75.7804"
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="org_location_url">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  ലൊക്കേഷൻ ലിങ്ക് (Google Maps URL)
+                </Label>
+                <Input
+                  id="org_location_url"
+                  value={settings.org_location_url}
+                  onChange={(e) => setSettings(prev => ({ ...prev, org_location_url: e.target.value }))}
+                  placeholder="https://maps.app.goo.gl/..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Google Maps ലിങ്ക് നേരിട്ട് പേസ്റ്റ് ചെയ്യുക
+                </p>
+              </div>
+
+              {/* Social Media Links */}
+              <div className="pt-4 border-t">
+                <h3 className="font-medium mb-3 flex items-center gap-2">
+                  <LinkIcon className="w-4 h-4" />
+                  സോഷ്യൽ മീഡിയ ലിങ്കുകൾ
+                </h3>
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="social_youtube" className="flex items-center gap-2">
+                      <Youtube className="w-4 h-4 text-red-500" />
+                      YouTube
+                    </Label>
+                    <Input
+                      id="social_youtube"
+                      value={settings.social_youtube}
+                      onChange={(e) => setSettings(prev => ({ ...prev, social_youtube: e.target.value }))}
+                      placeholder="https://youtube.com/@channel"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="social_instagram" className="flex items-center gap-2">
+                      <Instagram className="w-4 h-4 text-pink-500" />
+                      Instagram
+                    </Label>
+                    <Input
+                      id="social_instagram"
+                      value={settings.social_instagram}
+                      onChange={(e) => setSettings(prev => ({ ...prev, social_instagram: e.target.value }))}
+                      placeholder="https://instagram.com/username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="social_facebook" className="flex items-center gap-2">
+                      <Facebook className="w-4 h-4 text-blue-600" />
+                      Facebook
+                    </Label>
+                    <Input
+                      id="social_facebook"
+                      value={settings.social_facebook}
+                      onChange={(e) => setSettings(prev => ({ ...prev, social_facebook: e.target.value }))}
+                      placeholder="https://facebook.com/page"
+                    />
+                  </div>
                 </div>
               </div>
 
