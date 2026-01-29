@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, MapPin, Mail, Heart, LogOut, Info, Image, IndianRupee, Globe, ExternalLink } from 'lucide-react';
+import { Phone, MapPin, Mail, Heart, LogOut, Info, Image, IndianRupee, Globe, ExternalLink, Youtube, Instagram, Facebook } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +19,10 @@ interface OrgSettings {
   org_phone: string;
   org_email: string;
   org_description: string;
-  org_location_lat: string;
-  org_location_lng: string;
+  org_location_url: string;
+  social_youtube: string;
+  social_instagram: string;
+  social_facebook: string;
 }
 
 const DonorAbout = () => {
@@ -66,14 +68,15 @@ const DonorAbout = () => {
   };
 
   const openMap = () => {
-    if (settings?.org_location_lat && settings?.org_location_lng) {
-      const url = `https://www.google.com/maps?q=${settings.org_location_lat},${settings.org_location_lng}`;
-      window.open(url, '_blank');
+    if (settings?.org_location_url) {
+      window.open(settings.org_location_url, '_blank');
     } else if (settings?.org_address) {
       const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.org_address)}`;
       window.open(url, '_blank');
     }
   };
+
+  const hasSocialLinks = settings?.social_youtube || settings?.social_instagram || settings?.social_facebook;
 
   if (loading) {
     return (
@@ -192,6 +195,57 @@ const DonorAbout = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Social Media Links Card */}
+            {hasSocialLinks && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    {language === 'ml' ? 'സോഷ്യൽ മീഡിയ' : 'Social Media'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {settings?.social_youtube && (
+                    <a 
+                      href={settings.social_youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Youtube className="w-5 h-5 text-destructive" />
+                      <span className="flex-1">YouTube</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                    </a>
+                  )}
+                  
+                  {settings?.social_instagram && (
+                    <a 
+                      href={settings.social_instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Instagram className="w-5 h-5 text-primary" />
+                      <span className="flex-1">Instagram</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                    </a>
+                  )}
+                  
+                  {settings?.social_facebook && (
+                    <a 
+                      href={settings.social_facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Facebook className="w-5 h-5 text-primary" />
+                      <span className="flex-1">Facebook</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>

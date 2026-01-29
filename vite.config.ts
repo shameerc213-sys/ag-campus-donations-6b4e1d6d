@@ -20,15 +20,15 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "അജ്മീർ ഗേറ്റ് ക്യാമ്പസ് കാരാട് - സംഭാവന ട്രാക്കർ",
-        short_name: "AG Campus",
-        description: "സംഭാവന ട്രാക്കിംഗ് സിസ്റ്റം",
+        name: "ദാതാക്കളുടെ പോർട്ടൽ - AG Campus",
+        short_name: "AG Portal",
+        description: "അജ്മീർ ഗേറ്റ് ക്യാമ്പസ് ദാതാക്കളുടെ പോർട്ടൽ",
         theme_color: "#2d7a4f",
         background_color: "#faf8f5",
         display: "standalone",
         orientation: "portrait",
-        scope: "/",
-        start_url: "/",
+        scope: "/portal",
+        start_url: "/portal",
         icons: [
           {
             src: "/pwa-192x192.png",
