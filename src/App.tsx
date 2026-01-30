@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/portal" replace />;
   }
 
   return <Layout>{children}</Layout>;
@@ -49,7 +49,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Navigate to="/portal" replace />} />
       <Route path="/my-donations/:id" element={<PublicDonorView />} />
       
       {/* Donor Portal Routes */}
