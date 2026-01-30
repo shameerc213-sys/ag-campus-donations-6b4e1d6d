@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { Heart } from 'lucide-react';
 
 const authSchema = z.object({
   email: z.string().email('സാധുവായ ഇമെയിൽ നൽകുക'),
@@ -138,6 +139,19 @@ const Auth = () => {
             >
               {isLogin ? 'പുതിയ അക്കൗണ്ട് സൃഷ്ടിക്കാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക' : 'ഇതിനകം അക്കൗണ്ട് ഉണ്ടോ? ലോഗിൻ ചെയ്യുക'}
             </button>
+          </div>
+          
+          {/* Donor Portal Link */}
+          <div className="mt-6 pt-4 border-t border-border">
+            <Link to="/portal" className="block">
+              <Button variant="outline" className="w-full gap-2">
+                <Heart className="w-4 h-4" />
+                ദാതാക്കളുടെ പോർട്ടൽ
+              </Button>
+            </Link>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              നിങ്ങൾ ഒരു ദാതാവാണെങ്കിൽ ഇവിടെ ക്ലിക്ക് ചെയ്യുക
+            </p>
           </div>
         </CardContent>
       </Card>
