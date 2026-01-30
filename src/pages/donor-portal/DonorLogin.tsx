@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDonorAuth } from '@/contexts/DonorAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -124,6 +124,15 @@ const DonorLogin = () => {
               {loading ? t('auth.waiting') : t('auth.login')}
             </Button>
           </form>
+          
+          {/* Install App Link */}
+          <div className="mt-4 pt-4 border-t border-border text-center">
+            <Link to="/portal/install" className="text-sm text-primary hover:underline">
+              {language === 'ml' 
+                ? '📲 ഫോണിൽ ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക'
+                : '📲 Click here to install app on your phone'}
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
