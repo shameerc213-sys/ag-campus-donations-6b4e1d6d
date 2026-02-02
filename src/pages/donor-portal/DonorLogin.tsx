@@ -8,7 +8,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, Globe, Settings } from 'lucide-react';
+import { Heart, Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,15 +126,11 @@ const DonorLogin = () => {
           </form>
           
           {/* Install App Link */}
-          <div className="mt-4 pt-4 border-t border-border text-center space-y-3">
+          <div className="mt-4 pt-4 border-t border-border text-center">
             <Link to="/portal/install" className="text-sm text-primary hover:underline block">
               {language === 'ml' 
                 ? '📲 ഫോണിൽ ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക'
                 : '📲 Click here to install app on your phone'}
-            </Link>
-            <Link to="/auth" className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1">
-              <Settings className="w-3 h-3" />
-              {language === 'ml' ? 'അഡ്മിൻ ലോഗിൻ' : 'Admin Login'}
             </Link>
           </div>
         </CardContent>
