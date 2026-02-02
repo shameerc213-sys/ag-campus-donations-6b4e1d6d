@@ -56,7 +56,7 @@ const Auth = () => {
             });
           }
         } else {
-          navigate('/');
+          navigate('/donors');
         }
       } else {
         const { error } = await signUp(email, password);
