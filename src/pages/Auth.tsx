@@ -153,6 +153,13 @@ const Auth = () => {
               നിങ്ങൾ ഒരു ദാതാവാണെങ്കിൽ ഇവിടെ ക്ലിക്ക് ചെയ്യുക
             </p>
           </div>
+
+          {/* Install App Link */}
+          <div className="mt-4 text-center">
+            <Link to="/admin/install" className="text-sm text-primary hover:underline">
+              📲 ഫോണിൽ അഡ്മിൻ ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ ഇവിടെ ക്ലിക്ക് ചെയ്യുക
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

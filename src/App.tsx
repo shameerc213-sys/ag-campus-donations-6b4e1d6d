@@ -21,6 +21,7 @@ import DonorHome from "./pages/donor-portal/DonorHome";
 import DonorAbout from "./pages/donor-portal/DonorAbout";
 import DonorGallery from "./pages/donor-portal/DonorGallery";
 import PortalInstall from "./pages/donor-portal/PortalInstall";
+import AdminInstall from "./pages/AdminInstall";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
@@ -49,6 +50,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/admin/install" element={<AdminInstall />} />
       <Route path="/" element={<Navigate to="/portal" replace />} />
       <Route path="/my-donations/:id" element={<PublicDonorView />} />
       
