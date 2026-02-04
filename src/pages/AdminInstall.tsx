@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +8,22 @@ import { Link } from 'react-router-dom';
 const AdminInstall = () => {
   const { language } = useLanguage();
 
+  // Switch to admin manifest when on this page
+  useEffect(() => {
+    const existingManifest = document.querySelector('link[rel="manifest"]');
+    const originalHref = existingManifest?.getAttribute('href');
+    
+    if (existingManifest) {
+      existingManifest.setAttribute('href', '/admin-manifest.json');
+    }
+
+    // Restore original manifest on unmount
+    return () => {
+      if (existingManifest && originalHref) {
+        existingManifest.setAttribute('href', originalHref);
+      }
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <div className="max-w-2xl mx-auto">
