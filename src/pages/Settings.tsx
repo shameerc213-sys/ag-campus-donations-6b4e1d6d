@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon, MapPin, Youtube, Instagram, Facebook } from 'lucide-react';
+import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon, MapPin } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import SocialLinksManager from '@/components/admin/SocialLinksManager';
 
 interface OrgSettings {
   org_name: string;
@@ -28,9 +29,6 @@ interface OrgSettings {
   org_location_url: string;
   password_prefix: string;
   default_language: string;
-  social_youtube: string;
-  social_instagram: string;
-  social_facebook: string;
 }
 
 interface MediaItem {
@@ -51,9 +49,6 @@ const Settings = () => {
     org_location_url: '',
     password_prefix: 'OM',
     default_language: 'ml',
-    social_youtube: '',
-    social_instagram: '',
-    social_facebook: '',
   });
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -345,52 +340,6 @@ const Settings = () => {
                 </p>
               </div>
 
-              {/* Social Media Links */}
-              <div className="pt-4 border-t">
-                <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <LinkIcon className="w-4 h-4" />
-                  സോഷ്യൽ മീഡിയ ലിങ്കുകൾ
-                </h3>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="social_youtube" className="flex items-center gap-2">
-                      <Youtube className="w-4 h-4 text-red-500" />
-                      YouTube
-                    </Label>
-                    <Input
-                      id="social_youtube"
-                      value={settings.social_youtube}
-                      onChange={(e) => setSettings(prev => ({ ...prev, social_youtube: e.target.value }))}
-                      placeholder="https://youtube.com/@channel"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="social_instagram" className="flex items-center gap-2">
-                      <Instagram className="w-4 h-4 text-pink-500" />
-                      Instagram
-                    </Label>
-                    <Input
-                      id="social_instagram"
-                      value={settings.social_instagram}
-                      onChange={(e) => setSettings(prev => ({ ...prev, social_instagram: e.target.value }))}
-                      placeholder="https://instagram.com/username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="social_facebook" className="flex items-center gap-2">
-                      <Facebook className="w-4 h-4 text-blue-600" />
-                      Facebook
-                    </Label>
-                    <Input
-                      id="social_facebook"
-                      value={settings.social_facebook}
-                      onChange={(e) => setSettings(prev => ({ ...prev, social_facebook: e.target.value }))}
-                      placeholder="https://facebook.com/page"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <Button onClick={handleSaveSettings} disabled={saving}>
                 {saving ? 'സേവ് ചെയ്യുന്നു...' : 'സേവ് ചെയ്യുക'}
               </Button>
@@ -507,6 +456,9 @@ const Settings = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Social Links */}
+          <SocialLinksManager />
         </TabsContent>
 
         {/* App Settings */}
