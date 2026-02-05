@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, MapPin, Mail, Heart, LogOut, Info, Image, IndianRupee, Globe, ExternalLink, Youtube, Instagram, Facebook } from 'lucide-react';
+import { Phone, MapPin, Mail, Heart, LogOut, Info, Image, IndianRupee, Globe, ExternalLink, Youtube, Instagram, Facebook, Link as LinkIcon } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,9 +20,14 @@ interface OrgSettings {
   org_email: string;
   org_description: string;
   org_location_url: string;
-  social_youtube: string;
-  social_instagram: string;
-  social_facebook: string;
+}
+
+interface SocialLink {
+  id: string;
+  platform: string;
+  title: string;
+  url: string;
+  thumbnail_url: string | null;
 }
 
 const DonorAbout = () => {
@@ -30,6 +35,7 @@ const DonorAbout = () => {
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<OrgSettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
 
   useEffect(() => {
@@ -40,6 +46,7 @@ const DonorAbout = () => {
 
   useEffect(() => {
     fetchSettings();
+    fetchSocialLinks();
   }, []);
 
   const fetchSettings = async () => {
@@ -62,6 +69,19 @@ const DonorAbout = () => {
     }
   };
 
+  const fetchSocialLinks = async () => {
+    try {
+      const { data } = await supabase
+        .from('social_links')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      setSocialLinks(data || []);
+    } catch (error) {
+      console.error('Error fetching social links:', error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/portal');
@@ -76,7 +96,18 @@ const DonorAbout = () => {
     }
   };
 
-  const hasSocialLinks = settings?.social_youtube || settings?.social_instagram || settings?.social_facebook;
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'youtube':
+        return <Youtube className="w-5 h-5 text-destructive" />;
+      case 'instagram':
+        return <Instagram className="w-5 h-5 text-primary" />;
+      case 'facebook':
+        return <Facebook className="w-5 h-5 text-primary" />;
+      default:
+        return <LinkIcon className="w-5 h-5 text-muted-foreground" />;
+    }
+  };
 
   if (loading) {
     return (
@@ -197,52 +228,36 @@ const DonorAbout = () => {
             </Card>
 
             {/* Social Media Links Card */}
-            {hasSocialLinks && (
+            {socialLinks.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <LinkIcon className="w-5 h-5 text-primary" />
                     {language === 'ml' ? 'സോഷ്യൽ മീഡിയ' : 'Social Media'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {settings?.social_youtube && (
+                  {socialLinks.map((link) => (
                     <a 
-                      href={settings.social_youtube}
+                      key={link.id}
+                      href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                     >
-                      <Youtube className="w-5 h-5 text-destructive" />
-                      <span className="flex-1">YouTube</span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                      {link.thumbnail_url ? (
+                        <img
+                          src={link.thumbnail_url}
+                          alt={link.title}
+                          className="w-10 h-10 object-cover rounded-lg flex-shrink-0"
+                        />
+                      ) : (
+                        getPlatformIcon(link.platform)
+                      )}
+                      <span className="flex-1 truncate">{link.title}</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     </a>
-                  )}
-                  
-                  {settings?.social_instagram && (
-                    <a 
-                      href={settings.social_instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                    >
-                      <Instagram className="w-5 h-5 text-primary" />
-                      <span className="flex-1">Instagram</span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </a>
-                  )}
-                  
-                  {settings?.social_facebook && (
-                    <a 
-                      href={settings.social_facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                    >
-                      <Facebook className="w-5 h-5 text-primary" />
-                      <span className="flex-1">Facebook</span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                    </a>
-                  )}
+                  ))}
                 </CardContent>
               </Card>
             )}
