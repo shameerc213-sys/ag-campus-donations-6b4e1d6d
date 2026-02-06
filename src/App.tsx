@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) {
-    return <Navigate to="/portal" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   return <Layout>{children}</Layout>;
