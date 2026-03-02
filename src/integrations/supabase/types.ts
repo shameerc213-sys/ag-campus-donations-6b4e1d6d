@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      contacts: {
+        Row: {
+          created_at: string
+          designation: string | null
+          id: string
+          name: string
+          phone: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          designation?: string | null
+          id?: string
+          name: string
+          phone: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          designation?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       donations: {
         Row: {
           amount: number
@@ -75,6 +102,71 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dua_requests: {
+        Row: {
+          created_at: string
+          donor_id: string
+          id: string
+          message: string
+          reply: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          donor_id: string
+          id?: string
+          message: string
+          reply?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          donor_id?: string
+          id?: string
+          message?: string
+          reply?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dua_requests_donor_id_fkey"
+            columns: ["donor_id"]
+            isOneToOne: false
+            referencedRelation: "donors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      initiatives: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          sort_order: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number | null
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -160,6 +252,45 @@ export type Database = {
           title?: string
           updated_at?: string
           url?: string
+        }
+        Relationships: []
+      }
+      spiritual_gatherings: {
+        Row: {
+          created_at: string
+          date_info: string | null
+          day_of_week: string | null
+          description: string | null
+          id: string
+          recurring: boolean | null
+          sort_order: number | null
+          time_info: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_info?: string | null
+          day_of_week?: string | null
+          description?: string | null
+          id?: string
+          recurring?: boolean | null
+          sort_order?: number | null
+          time_info?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_info?: string | null
+          day_of_week?: string | null
+          description?: string | null
+          id?: string
+          recurring?: boolean | null
+          sort_order?: number | null
+          time_info?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
