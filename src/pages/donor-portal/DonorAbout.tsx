@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDonorAuth } from '@/contexts/DonorAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Phone, MapPin, Mail, Heart, LogOut, Info, Image, IndianRupee, Globe, ExternalLink, Youtube, Instagram, Facebook, Link as LinkIcon } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Phone, MapPin, Mail, ExternalLink, Youtube, Instagram, Facebook, Link as LinkIcon, Info } from 'lucide-react';
+import PortalHeader from '@/components/portal/PortalHeader';
+import PortalNav from '@/components/portal/PortalNav';
 
 interface OrgSettings {
   org_name: string;
@@ -31,17 +26,15 @@ interface SocialLink {
 }
 
 const DonorAbout = () => {
-  const { donor, logout, loading } = useDonorAuth();
-  const { t, language, setLanguage } = useLanguage();
+  const { donor, loading } = useDonorAuth();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<OrgSettings | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
 
   useEffect(() => {
-    if (!loading && !donor) {
-      navigate('/portal');
-    }
+    if (!loading && !donor) navigate('/portal');
   }, [donor, loading, navigate]);
 
   useEffect(() => {
@@ -51,19 +44,14 @@ const DonorAbout = () => {
 
   const fetchSettings = async () => {
     try {
-      const { data } = await supabase
-        .from('organization_settings')
-        .select('key, value');
-
+      const { data } = await supabase.from('organization_settings').select('key, value');
       if (data) {
-        const settingsObj: Record<string, string> = {};
-        data.forEach(item => {
-          settingsObj[item.key] = item.value || '';
-        });
-        setSettings(settingsObj as unknown as OrgSettings);
+        const obj: Record<string, string> = {};
+        data.forEach(item => { obj[item.key] = item.value || ''; });
+        setSettings(obj as unknown as OrgSettings);
       }
     } catch (error) {
-      console.error('Error fetching settings:', error);
+      console.error('Error:', error);
     } finally {
       setLoadingSettings(false);
     }
@@ -71,41 +59,27 @@ const DonorAbout = () => {
 
   const fetchSocialLinks = async () => {
     try {
-      const { data } = await supabase
-        .from('social_links')
-        .select('*')
-        .order('sort_order', { ascending: true });
-
+      const { data } = await supabase.from('social_links').select('*').order('sort_order', { ascending: true });
       setSocialLinks(data || []);
     } catch (error) {
-      console.error('Error fetching social links:', error);
+      console.error('Error:', error);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/portal');
   };
 
   const openMap = () => {
     if (settings?.org_location_url) {
       window.open(settings.org_location_url, '_blank');
     } else if (settings?.org_address) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.org_address)}`;
-      window.open(url, '_blank');
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.org_address)}`, '_blank');
     }
   };
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case 'youtube':
-        return <Youtube className="w-5 h-5 text-destructive" />;
-      case 'instagram':
-        return <Instagram className="w-5 h-5 text-primary" />;
-      case 'facebook':
-        return <Facebook className="w-5 h-5 text-primary" />;
-      default:
-        return <LinkIcon className="w-5 h-5 text-muted-foreground" />;
+      case 'youtube': return <Youtube className="w-5 h-5 text-destructive" />;
+      case 'instagram': return <Instagram className="w-5 h-5 text-primary" />;
+      case 'facebook': return <Facebook className="w-5 h-5 text-primary" />;
+      default: return <LinkIcon className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -117,46 +91,11 @@ const DonorAbout = () => {
     );
   }
 
-  if (!donor) {
-    return null;
-  }
+  if (!donor) return null;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-primary text-primary-foreground py-4 px-4 sticky top-0 z-50">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Heart className="w-6 h-6" />
-            <span className="font-semibold">{t('app.name')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary-foreground/10">
-                  <Globe className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setLanguage('ml')}>
-                  മലയാളം
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('en')}>
-                  English
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleLogout}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <PortalHeader />
 
       <div className="max-w-lg mx-auto p-4 space-y-4 pb-24">
         {loadingSettings ? (
@@ -165,7 +104,6 @@ const DonorAbout = () => {
           </div>
         ) : (
           <>
-            {/* Organization Info Card */}
             <Card className="border-t-4 border-t-primary">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -175,50 +113,29 @@ const DonorAbout = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-primary">
-                    {settings?.org_name || t('app.name')}
-                  </h2>
+                  <h2 className="text-xl font-bold text-primary">{settings?.org_name || t('app.name')}</h2>
                 </div>
-                
                 {settings?.org_description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {settings.org_description}
-                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{settings.org_description}</p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Contact Card */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('donor.contact')}</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">{t('donor.contact')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {settings?.org_phone && (
-                  <a 
-                    href={`tel:${settings.org_phone}`}
-                    className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <Phone className="w-5 h-5 text-primary" />
-                    <span>{settings.org_phone}</span>
+                  <a href={`tel:${settings.org_phone}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                    <Phone className="w-5 h-5 text-primary" /><span>{settings.org_phone}</span>
                   </a>
                 )}
-                
                 {settings?.org_email && (
-                  <a 
-                    href={`mailto:${settings.org_email}`}
-                    className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                  >
-                    <Mail className="w-5 h-5 text-primary" />
-                    <span>{settings.org_email}</span>
+                  <a href={`mailto:${settings.org_email}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                    <Mail className="w-5 h-5 text-primary" /><span>{settings.org_email}</span>
                   </a>
                 )}
-                
                 {settings?.org_address && (
-                  <button 
-                    onClick={openMap}
-                    className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors w-full text-left"
-                  >
+                  <button onClick={openMap} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors w-full text-left">
                     <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
                     <span className="flex-1">{settings.org_address}</span>
                     <ExternalLink className="w-4 h-4 text-muted-foreground" />
@@ -227,7 +144,6 @@ const DonorAbout = () => {
               </CardContent>
             </Card>
 
-            {/* Social Media Links Card */}
             {socialLinks.length > 0 && (
               <Card>
                 <CardHeader>
@@ -238,22 +154,11 @@ const DonorAbout = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {socialLinks.map((link) => (
-                    <a 
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-                    >
+                    <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
                       {link.thumbnail_url ? (
-                        <img
-                          src={link.thumbnail_url}
-                          alt={link.title}
-                          className="w-10 h-10 object-cover rounded-lg flex-shrink-0"
-                        />
-                      ) : (
-                        getPlatformIcon(link.platform)
-                      )}
+                        <img src={link.thumbnail_url} alt={link.title} className="w-10 h-10 object-cover rounded-lg flex-shrink-0" />
+                      ) : getPlatformIcon(link.platform)}
                       <span className="flex-1 truncate">{link.title}</span>
                       <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     </a>
@@ -265,34 +170,7 @@ const DonorAbout = () => {
         )}
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg">
-        <div className="max-w-lg mx-auto px-4">
-          <div className="flex justify-around py-2">
-            <Link
-              to="/portal/home"
-              className="flex flex-col items-center py-2 px-3 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent/50"
-            >
-              <IndianRupee className="w-5 h-5" />
-              <span className="text-xs mt-1">{t('donor.donationHistory')}</span>
-            </Link>
-            <Link
-              to="/portal/about"
-              className="flex flex-col items-center py-2 px-3 rounded-lg text-primary bg-accent"
-            >
-              <Info className="w-5 h-5" />
-              <span className="text-xs mt-1">{t('donor.aboutOrg')}</span>
-            </Link>
-            <Link
-              to="/portal/gallery"
-              className="flex flex-col items-center py-2 px-3 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent/50"
-            >
-              <Image className="w-5 h-5" />
-              <span className="text-xs mt-1">{t('donor.gallery')}</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <PortalNav />
     </div>
   );
 };

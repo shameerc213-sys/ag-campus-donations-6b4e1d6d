@@ -18,8 +18,13 @@ import Layout from "./components/Layout";
 import PublicDonorView from "./pages/PublicDonorView";
 import DonorLogin from "./pages/donor-portal/DonorLogin";
 import DonorHome from "./pages/donor-portal/DonorHome";
+import DonorDonations from "./pages/donor-portal/DonorDonations";
 import DonorAbout from "./pages/donor-portal/DonorAbout";
 import DonorGallery from "./pages/donor-portal/DonorGallery";
+import DonorInitiatives from "./pages/donor-portal/DonorInitiatives";
+import DonorGatherings from "./pages/donor-portal/DonorGatherings";
+import DonorContacts from "./pages/donor-portal/DonorContacts";
+import DonorDuaRequest from "./pages/donor-portal/DonorDuaRequest";
 import PortalInstall from "./pages/donor-portal/PortalInstall";
 import AdminInstall from "./pages/AdminInstall";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,8 +63,13 @@ const AppRoutes = () => {
       <Route path="/portal" element={<DonorLogin />} />
       <Route path="/portal/install" element={<PortalInstall />} />
       <Route path="/portal/home" element={<DonorHome />} />
+      <Route path="/portal/donations" element={<DonorDonations />} />
       <Route path="/portal/about" element={<DonorAbout />} />
       <Route path="/portal/gallery" element={<DonorGallery />} />
+      <Route path="/portal/initiatives" element={<DonorInitiatives />} />
+      <Route path="/portal/gatherings" element={<DonorGatherings />} />
+      <Route path="/portal/contacts" element={<DonorContacts />} />
+      <Route path="/portal/dua-request" element={<DonorDuaRequest />} />
       
       <Route
         path="/donors"

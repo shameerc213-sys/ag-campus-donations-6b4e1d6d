@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon, MapPin } from 'lucide-react';
+import { Settings as SettingsIcon, Building, Image, Video, Globe, Trash2, Plus, Upload, Link as LinkIcon, MapPin, Landmark } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import SocialLinksManager from '@/components/admin/SocialLinksManager';
+import InitiativesManager from '@/components/admin/InitiativesManager';
+import GatheringsManager from '@/components/admin/GatheringsManager';
+import ContactsManager from '@/components/admin/ContactsManager';
+import DuaRequestsManager from '@/components/admin/DuaRequestsManager';
 
 interface OrgSettings {
   org_name: string;
@@ -253,7 +257,7 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="org" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="org" className="flex items-center gap-1">
             <Building className="w-4 h-4" />
             <span className="hidden sm:inline">സ്ഥാപനം</span>
@@ -261,6 +265,10 @@ const Settings = () => {
           <TabsTrigger value="media" className="flex items-center gap-1">
             <Image className="w-4 h-4" />
             <span className="hidden sm:inline">മീഡിയ</span>
+          </TabsTrigger>
+          <TabsTrigger value="portal" className="flex items-center gap-1">
+            <Landmark className="w-4 h-4" />
+            <span className="hidden sm:inline">പോർട്ടൽ</span>
           </TabsTrigger>
           <TabsTrigger value="app" className="flex items-center gap-1">
             <Globe className="w-4 h-4" />
@@ -459,6 +467,14 @@ const Settings = () => {
 
           {/* Social Links */}
           <SocialLinksManager />
+        </TabsContent>
+
+        {/* Portal Management */}
+        <TabsContent value="portal" className="space-y-4">
+          <InitiativesManager />
+          <GatheringsManager />
+          <ContactsManager />
+          <DuaRequestsManager />
         </TabsContent>
 
         {/* App Settings */}
