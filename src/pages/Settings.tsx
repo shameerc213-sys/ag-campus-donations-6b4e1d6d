@@ -31,6 +31,7 @@ interface OrgSettings {
   org_email: string;
   org_description: string;
   org_location_url: string;
+  org_website: string;
   password_prefix: string;
   default_language: string;
 }
@@ -51,6 +52,7 @@ const Settings = () => {
     org_email: '',
     org_description: '',
     org_location_url: '',
+    org_website: '',
     password_prefix: 'OM',
     default_language: 'ml',
   });
@@ -330,6 +332,19 @@ const Settings = () => {
                     onChange={(e) => setSettings(prev => ({ ...prev, org_email: e.target.value }))}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="org_website">
+                  <Globe className="w-4 h-4 inline mr-1" />
+                  വെബ്സൈറ്റ്
+                </Label>
+                <Input
+                  id="org_website"
+                  value={settings.org_website}
+                  onChange={(e) => setSettings(prev => ({ ...prev, org_website: e.target.value }))}
+                  placeholder="https://www.example.com"
+                />
               </div>
 
               <div className="space-y-2">
