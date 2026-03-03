@@ -173,7 +173,7 @@ const DonorHome = () => {
         <div className="border-t-2 border-dashed border-primary/30" />
 
         {/* Action Buttons */}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {actionButtons.map(({ to, label }) => (
             <Link key={to} to={to}>
               <Button
