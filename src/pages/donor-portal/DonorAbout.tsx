@@ -15,6 +15,7 @@ interface OrgSettings {
   org_email: string;
   org_description: string;
   org_location_url: string;
+  org_website: string;
 }
 
 interface SocialLink {
@@ -111,35 +112,73 @@ const DonorAbout = () => {
                   {t('donor.aboutOrg')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div className="text-center">
                   <h2 className="text-xl font-bold text-primary">{settings?.org_name || t('app.name')}</h2>
                 </div>
-                {settings?.org_description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{settings.org_description}</p>
-                )}
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader><CardTitle className="text-lg">{t('donor.contact')}</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                {settings?.org_phone && (
-                  <a href={`tel:${settings.org_phone}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
-                    <Phone className="w-5 h-5 text-primary" /><span>{settings.org_phone}</span>
-                  </a>
-                )}
-                {settings?.org_email && (
-                  <a href={`mailto:${settings.org_email}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
-                    <Mail className="w-5 h-5 text-primary" /><span>{settings.org_email}</span>
-                  </a>
-                )}
+                {/* Location */}
                 {settings?.org_address && (
-                  <button onClick={openMap} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors w-full text-left">
-                    <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="flex-1">{settings.org_address}</span>
-                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                  </button>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      {language === 'ml' ? 'ലൊക്കേഷൻ' : 'Location'}
+                    </h3>
+                    <button onClick={openMap} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors w-full text-left">
+                      <span className="flex-1 text-sm">{settings.org_address}</span>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Website */}
+                {settings?.org_website && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4 text-primary" />
+                      {language === 'ml' ? 'വെബ്സൈറ്റ്' : 'Website'}
+                    </h3>
+                    <a href={settings.org_website.startsWith('http') ? settings.org_website : `https://${settings.org_website}`} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <span className="text-sm text-primary">{settings.org_website}</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* Email */}
+                {settings?.org_email && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary" />
+                      {language === 'ml' ? 'ഇമെയിൽ' : 'Email'}
+                    </h3>
+                    <a href={`mailto:${settings.org_email}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <span className="text-sm">{settings.org_email}</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* Phone */}
+                {settings?.org_phone && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-primary" />
+                      {language === 'ml' ? 'ഫോൺ' : 'Phone'}
+                    </h3>
+                    <a href={`tel:${settings.org_phone}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <span className="text-sm">{settings.org_phone}</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* Description */}
+                {settings?.org_description && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-2">
+                      {language === 'ml' ? 'സ്ഥാപനത്തെ കുറിച്ച്' : 'About'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{settings.org_description}</p>
+                  </div>
                 )}
               </CardContent>
             </Card>
