@@ -55,9 +55,15 @@ const DonorHome = () => {
   }, [media.length]);
 
   const getYouTubeId = (url: string) => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
     return match ? match[1] : null;
+  };
+
+  const getVideoThumbnail = (url: string) => {
+    const ytId = getYouTubeId(url);
+    if (ytId) return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    return null;
   };
 
   if (loading) {
@@ -97,24 +103,28 @@ const DonorHome = () => {
     <div className="min-h-screen bg-background">
       <PortalHeader />
 
-      <div className="max-w-lg mx-auto p-4 space-y-6 pb-24">
+      <div className="max-w-lg mx-auto p-4 space-y-5 pb-20">
         {/* Media Slider */}
         {media.length > 0 && (
           <div className="relative overflow-hidden rounded-2xl bg-muted aspect-video">
             {media.map((item, index) => {
               const isVideo = item.type === 'video';
-              const ytId = isVideo ? getYouTubeId(item.url) : null;
+              const thumbnail = isVideo ? getVideoThumbnail(item.url) : null;
               return (
                 <div
                   key={item.id}
                   className="absolute inset-0 transition-opacity duration-700"
                   style={{ opacity: index === currentSlide ? 1 : 0, pointerEvents: index === currentSlide ? 'auto' : 'none' }}
                 >
-                  {isVideo && ytId ? (
+                  {isVideo && thumbnail ? (
                     <img
-                      src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+                      src={thumbnail}
                       alt={item.title || 'Video'}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const ytId = getYouTubeId(item.url);
+                        if (ytId) (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                      }}
                     />
                   ) : (
                     <img
@@ -163,12 +173,12 @@ const DonorHome = () => {
         <div className="border-t-2 border-dashed border-primary/30" />
 
         {/* Action Buttons */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {actionButtons.map(({ to, label }) => (
             <Link key={to} to={to}>
               <Button
                 variant="outline"
-                className="w-full py-6 text-lg font-medium border-2 border-primary/40 text-foreground hover:bg-primary/5 rounded-xl mb-0"
+                className="w-full py-5 text-lg font-medium border-2 border-primary/40 text-foreground hover:bg-primary/5 rounded-xl"
               >
                 {label}
               </Button>
