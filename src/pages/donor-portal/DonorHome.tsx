@@ -198,11 +198,13 @@ const DonorHome = () => {
         </div>
 
         {/* Campus building image fills remaining space */}
-        <div className="flex-1 min-h-[200px] relative overflow-hidden">
+        <div className="flex-1 min-h-[250px] relative overflow-hidden">
+          {/* White gradient overlay at top */}
+          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-background to-transparent z-10" />
           <img
             src={campusImage}
             alt="Ajmeer Gate Campus"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover scale-125 object-center"
           />
         </div>
       </div>
