@@ -163,7 +163,7 @@ const DonorAbout = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                       <Phone className="w-4 h-4 text-primary" />
-                      {language === 'ml' ? 'ബന്ധപ്പെടുക' : 'Contact'}
+                      {language === 'ml' ? 'ഫോൺ' : 'Phone'}
                     </h3>
                     <a href={`tel:${settings.org_phone}`} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
                       <span className="text-sm">{settings.org_phone}</span>
