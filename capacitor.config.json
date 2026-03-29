@@ -3,8 +3,7 @@
   "appName": "ag-campus-donations",
   "webDir": "dist",
   "server": {
-    "url": "https://79876175-5727-441d-a24a-a68f8a25aa6f.lovableproject.com?forceHideBadge=true",
-    "cleartext": true
+    "androidScheme": "https"
   },
   "plugins": {
     "SplashScreen": {
