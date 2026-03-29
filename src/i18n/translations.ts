@@ -4,7 +4,7 @@ export const translations = {
   // Common
   'app.name': {
     ml: 'അജ്മീർ ഗേറ്റ് ക്യാമ്പസ് കാരാട്',
-    en: 'Ajmeer Gate Campus Karat'
+    en: 'Ajmeer Gate Campus Karad'
   },
   'app.subtitle': {
     ml: 'സംഭാവന മാനേജ്മെന്റ്',
