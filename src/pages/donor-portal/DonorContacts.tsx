@@ -20,6 +20,7 @@ const DonorContacts = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [enquiryPhone, setEnquiryPhone] = useState('');
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const DonorContacts = () => {
 
   useEffect(() => {
     fetchContacts();
+    fetchEnquiryPhone();
   }, []);
 
   const fetchContacts = async () => {
@@ -41,6 +43,19 @@ const DonorContacts = () => {
       console.error('Error:', error);
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const fetchEnquiryPhone = async () => {
+    try {
+      const { data } = await supabase
+        .from('organization_settings')
+        .select('value')
+        .eq('key', 'org_phone')
+        .maybeSingle();
+      setEnquiryPhone(data?.value || '');
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -67,6 +82,22 @@ const DonorContacts = () => {
         <h2 className="text-xl font-bold text-foreground">
           {language === 'ml' ? 'ബന്ധപ്പെടേണ്ട നമ്പറുകൾ' : 'Contact Numbers'}
         </h2>
+
+        {/* FOR ENQUIRIES section */}
+        {enquiryPhone && (
+          <a
+            href={`tel:${enquiryPhone}`}
+            className="block p-4 bg-primary/10 border-2 border-primary/30 rounded-xl text-center space-y-2"
+          >
+            <span className="inline-block bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+              FOR ENQUIRIES
+            </span>
+            <p className="text-lg font-bold text-foreground flex items-center justify-center gap-2">
+              <Phone className="w-5 h-5" />
+              {enquiryPhone}
+            </p>
+          </a>
+        )}
 
         {loadingData ? (
           <div className="flex justify-center py-8">

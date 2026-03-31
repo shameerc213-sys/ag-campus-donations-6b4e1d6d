@@ -4,8 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCircle, Send, CheckCircle2, Clock, HandHeart } from 'lucide-react';
+import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+
+interface DuaReply {
+  id: string;
+  reply_text: string;
+  created_at: string;
+}
 
 interface DuaRequest {
   id: string;
@@ -15,6 +21,7 @@ interface DuaRequest {
   status: string | null;
   created_at: string;
   donors?: { name: string } | null;
+  replies?: DuaReply[];
 }
 
 const DuaRequestsManager = () => {
@@ -32,7 +39,20 @@ const DuaRequestsManager = () => {
         .from('dua_requests')
         .select('*, donors(name)')
         .order('created_at', { ascending: false });
-      setRequests(data || []);
+
+      // Fetch replies for each request
+      const requestsWithReplies = await Promise.all(
+        (data || []).map(async (req) => {
+          const { data: replies } = await supabase
+            .from('dua_replies')
+            .select('*')
+            .eq('dua_request_id', req.id)
+            .order('created_at', { ascending: true });
+          return { ...req, replies: replies || [] };
+        })
+      );
+
+      setRequests(requestsWithReplies as DuaRequest[]);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -43,15 +63,33 @@ const DuaRequestsManager = () => {
   const handleReply = async (id: string) => {
     if (!replyText.trim()) return;
     try {
+      // Add new reply to dua_replies table
+      await supabase.from('dua_replies').insert({
+        dua_request_id: id,
+        reply_text: replyText.trim(),
+      });
+
+      // Update status to replied
       await supabase.from('dua_requests').update({
-        reply: replyText.trim(),
         status: 'replied',
+        reply: replyText.trim(),
         updated_at: new Date().toISOString(),
       }).eq('id', id);
+
       setReplyingId(null);
       setReplyText('');
       fetchRequests();
       toast({ title: 'മറുപടി നൽകി' });
+    } catch (error) {
+      toast({ title: 'Error', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteReply = async (replyId: string) => {
+    try {
+      await supabase.from('dua_replies').delete().eq('id', replyId);
+      fetchRequests();
+      toast({ title: 'മറുപടി നീക്കം ചെയ്തു' });
     } catch (error) {
       toast({ title: 'Error', variant: 'destructive' });
     }
@@ -102,9 +140,22 @@ const DuaRequestsManager = () => {
                 <p className="text-sm">{req.message}</p>
               </div>
 
-              {req.reply && (
-                <div className="bg-accent/50 p-3 rounded-lg">
-                  <p className="text-sm">{req.reply}</p>
+              {/* Show all replies */}
+              {req.replies && req.replies.length > 0 && (
+                <div className="space-y-2">
+                  {req.replies.map((reply, index) => (
+                    <div key={reply.id} className="bg-accent/50 p-3 rounded-lg flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="text-sm">{reply.reply_text}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          മറുപടി {index + 1} • {new Date(reply.created_at).toLocaleDateString('ml-IN')}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteReply(reply.id)}>
+                        <Trash2 className="w-3 h-3 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -126,8 +177,8 @@ const DuaRequestsManager = () => {
                   </div>
                 </div>
               ) : (
-                <Button size="sm" variant="outline" onClick={() => { setReplyingId(req.id); setReplyText(req.reply || ''); }}>
-                  {req.reply ? 'മറുപടി എഡിറ്റ്' : 'മറുപടി നൽകുക'}
+                <Button size="sm" variant="outline" onClick={() => { setReplyingId(req.id); setReplyText(''); }}>
+                  മറുപടി നൽകുക
                 </Button>
               )}
             </div>

@@ -106,6 +106,35 @@ export type Database = {
         }
         Relationships: []
       }
+      dua_replies: {
+        Row: {
+          created_at: string
+          dua_request_id: string
+          id: string
+          reply_text: string
+        }
+        Insert: {
+          created_at?: string
+          dua_request_id: string
+          id?: string
+          reply_text: string
+        }
+        Update: {
+          created_at?: string
+          dua_request_id?: string
+          id?: string
+          reply_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dua_replies_dua_request_id_fkey"
+            columns: ["dua_request_id"]
+            isOneToOne: false
+            referencedRelation: "dua_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dua_requests: {
         Row: {
           created_at: string
