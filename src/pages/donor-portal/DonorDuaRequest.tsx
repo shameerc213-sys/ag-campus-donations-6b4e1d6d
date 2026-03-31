@@ -11,12 +11,19 @@ import { useToast } from '@/hooks/use-toast';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
 
+interface DuaReply {
+  id: string;
+  reply_text: string;
+  created_at: string;
+}
+
 interface DuaRequest {
   id: string;
   message: string;
   reply: string | null;
   status: string | null;
   created_at: string;
+  replies?: DuaReply[];
 }
 
 const DonorDuaRequest = () => {
@@ -45,7 +52,20 @@ const DonorDuaRequest = () => {
         .select('*')
         .eq('donor_id', donor.id)
         .order('created_at', { ascending: false });
-      setRequests(data || []);
+
+      // Fetch replies for each request
+      const requestsWithReplies = await Promise.all(
+        (data || []).map(async (req) => {
+          const { data: replies } = await supabase
+            .from('dua_replies')
+            .select('*')
+            .eq('dua_request_id', req.id)
+            .order('created_at', { ascending: true });
+          return { ...req, replies: replies || [] };
+        })
+      );
+
+      setRequests(requestsWithReplies as DuaRequest[]);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -143,12 +163,24 @@ const DonorDuaRequest = () => {
                     <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-foreground">{req.message}</p>
                   </div>
-                  {req.reply && (
-                    <div className="flex items-start gap-2 bg-accent/50 p-3 rounded-lg">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground">{req.reply}</p>
+
+                  {/* Show all replies */}
+                  {req.replies && req.replies.length > 0 && (
+                    <div className="space-y-2">
+                      {req.replies.map((reply, index) => (
+                        <div key={reply.id} className="flex items-start gap-2 bg-accent/50 p-3 rounded-lg">
+                          <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm text-foreground">{reply.reply_text}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(reply.created_at).toLocaleDateString(language === 'ml' ? 'ml-IN' : 'en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
+
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {req.status === 'replied' ? (
                       <CheckCircle2 className="w-3 h-3 text-primary" />

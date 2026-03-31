@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Edit2, Save, X, BookOpen } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, BookOpen, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -82,6 +82,18 @@ const GatheringsManager = () => {
     toast({ title: 'നീക്കം ചെയ്തു' });
   };
 
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= items.length) return;
+    const itemA = items[index];
+    const itemB = items[newIndex];
+    await Promise.all([
+      supabase.from('spiritual_gatherings').update({ sort_order: newIndex }).eq('id', itemA.id),
+      supabase.from('spiritual_gatherings').update({ sort_order: index }).eq('id', itemB.id),
+    ]);
+    fetchItems();
+  };
+
   const resetForm = () => {
     setTitle(''); setDescription(''); setDayOfWeek(''); setTimeInfo(''); setDateInfo('');
     setEditingId(null); setIsAdding(false);
@@ -131,7 +143,7 @@ const GatheringsManager = () => {
           </Button>
         )}
 
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div key={item.id} className="flex items-start justify-between p-3 bg-muted rounded-lg">
             <div className="flex-1">
               <p className="font-medium">{item.title}</p>
@@ -141,6 +153,12 @@ const GatheringsManager = () => {
               </div>
             </div>
             <div className="flex gap-1 ml-2">
+              <Button variant="ghost" size="sm" onClick={() => handleMove(index, 'up')} disabled={index === 0}>
+                <ArrowUp className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => handleMove(index, 'down')} disabled={index === items.length - 1}>
+                <ArrowDown className="w-4 h-4" />
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}><Edit2 className="w-4 h-4" /></Button>
               <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
             </div>
