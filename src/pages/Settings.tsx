@@ -397,6 +397,7 @@ const Settings = () => {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileUpload}
                 className="hidden"
               />
