@@ -133,36 +133,48 @@ const Settings = () => {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
+    let successCount = 0;
+    let failCount = 0;
+
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `photos/${fileName}`;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${i}.${fileExt}`;
+          const filePath = `photos/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('org-media')
-        .upload(filePath, file);
+          const { error: uploadError } = await supabase.storage
+            .from('org-media')
+            .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from('org-media')
-        .getPublicUrl(filePath);
+          const { data: urlData } = supabase.storage
+            .from('org-media')
+            .getPublicUrl(filePath);
 
-      await supabase.from('org_media').insert({
-        type: 'photo',
-        url: urlData.publicUrl,
-        title: file.name,
-        sort_order: media.length,
-      });
+          await supabase.from('org_media').insert({
+            type: 'photo',
+            url: urlData.publicUrl,
+            title: file.name,
+            sort_order: media.length + i,
+          });
+          successCount++;
+        } catch (err) {
+          console.error('Error uploading file:', file.name, err);
+          failCount++;
+        }
+      }
 
       fetchMedia();
       toast({
         title: 'അപ്‌ലോഡ് ചെയ്തു',
-        description: 'ഫോട്ടോ വിജയകരമായി അപ്‌ലോഡ് ചെയ്തു',
+        description: `${successCount} ഫോട്ടോ(കൾ) വിജയകരമായി അപ്‌ലോഡ് ചെയ്തു${failCount > 0 ? `, ${failCount} എണ്ണം പരാജയപ്പെട്ടു` : ''}`,
       });
     } catch (error) {
       console.error('Error uploading:', error);
