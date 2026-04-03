@@ -74,6 +74,10 @@ const AppRoutes = () => {
       <Route path="/portal/contacts" element={<DonorContacts />} />
       <Route path="/portal/dua-request" element={<DonorDuaRequest />} />
       
+      {/* Assistant Portal Routes */}
+      <Route path="/assistant" element={<AssistantLogin />} />
+      <Route path="/assistant/dua-requests" element={<AssistantDuaRequests />} />
+      
       <Route
         path="/donors"
         element={
