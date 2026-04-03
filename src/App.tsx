@@ -27,6 +27,9 @@ import DonorContacts from "./pages/donor-portal/DonorContacts";
 import DonorDuaRequest from "./pages/donor-portal/DonorDuaRequest";
 import PortalInstall from "./pages/donor-portal/PortalInstall";
 import AdminInstall from "./pages/AdminInstall";
+import AssistantLogin from "./pages/assistant/AssistantLogin";
+import AssistantDuaRequests from "./pages/assistant/AssistantDuaRequests";
+import { AssistantAuthProvider } from "@/contexts/AssistantAuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
