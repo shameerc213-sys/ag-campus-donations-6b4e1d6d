@@ -57,6 +57,8 @@ const Settings = () => {
     org_website: '',
     password_prefix: 'OM',
     default_language: 'ml',
+    assistant_username: 'assistant',
+    assistant_password: 'assistant123',
   });
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
