@@ -34,6 +34,8 @@ interface OrgSettings {
   org_website: string;
   password_prefix: string;
   default_language: string;
+  assistant_username: string;
+  assistant_password: string;
 }
 
 interface MediaItem {
