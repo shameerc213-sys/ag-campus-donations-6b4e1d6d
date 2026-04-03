@@ -529,6 +529,31 @@ const Settings = () => {
                 </p>
               </div>
 
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-medium mb-3">അസിസ്റ്റന്റ് ലോഗിൻ ക്രെഡൻഷ്യൽസ്</h4>
+                <p className="text-xs text-muted-foreground mb-3">
+                  അസിസ്റ്റന്റ് ആപ്പ് ലിങ്ക്: /assistant
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="assistant_username">അസിസ്റ്റന്റ് യൂസർനെയിം</Label>
+                  <Input
+                    id="assistant_username"
+                    value={settings.assistant_username}
+                    onChange={(e) => setSettings(prev => ({ ...prev, assistant_username: e.target.value }))}
+                    placeholder="assistant"
+                  />
+                </div>
+                <div className="space-y-2 mt-2">
+                  <Label htmlFor="assistant_password">അസിസ്റ്റന്റ് പാസ്‌വേഡ്</Label>
+                  <Input
+                    id="assistant_password"
+                    value={settings.assistant_password}
+                    onChange={(e) => setSettings(prev => ({ ...prev, assistant_password: e.target.value }))}
+                    placeholder="assistant123"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="default_language">ഡിഫോൾട്ട് ഭാഷ</Label>
                 <select
