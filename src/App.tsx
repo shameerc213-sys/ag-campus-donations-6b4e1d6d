@@ -132,7 +132,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <DonorAuthProvider>
-              <AppRoutes />
+              <AssistantAuthProvider>
+                <AppRoutes />
+              </AssistantAuthProvider>
             </DonorAuthProvider>
           </AuthProvider>
         </BrowserRouter>
