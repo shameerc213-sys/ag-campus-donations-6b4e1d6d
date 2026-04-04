@@ -77,6 +77,7 @@ const AppRoutes = () => {
       
       {/* Assistant Portal Routes */}
       <Route path="/assistant" element={<AssistantLogin />} />
+      <Route path="/assistant/install" element={<AssistantInstall />} />
       <Route path="/assistant/dua-requests" element={<AssistantDuaRequests />} />
       
       <Route
