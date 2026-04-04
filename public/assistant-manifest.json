@@ -1,0 +1,29 @@
+{
+  "name": "AG Campus Assistant - ദുആ റിക്വസ്റ്റ് മാനേജ്മെന്റ്",
+  "short_name": "AG Assistant",
+  "description": "അജ്മീർ ഗേറ്റ് ക്യാമ്പസ് അസിസ്റ്റന്റ് പോർട്ടൽ",
+  "theme_color": "#2d7a4f",
+  "background_color": "#faf8f5",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/assistant",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

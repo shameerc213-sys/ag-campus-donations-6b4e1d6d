@@ -29,6 +29,7 @@ import PortalInstall from "./pages/donor-portal/PortalInstall";
 import AdminInstall from "./pages/AdminInstall";
 import AssistantLogin from "./pages/assistant/AssistantLogin";
 import AssistantDuaRequests from "./pages/assistant/AssistantDuaRequests";
+import AssistantInstall from "./pages/assistant/AssistantInstall";
 import { AssistantAuthProvider } from "@/contexts/AssistantAuthContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
@@ -76,6 +77,7 @@ const AppRoutes = () => {
       
       {/* Assistant Portal Routes */}
       <Route path="/assistant" element={<AssistantLogin />} />
+      <Route path="/assistant/install" element={<AssistantInstall />} />
       <Route path="/assistant/dua-requests" element={<AssistantDuaRequests />} />
       
       <Route
