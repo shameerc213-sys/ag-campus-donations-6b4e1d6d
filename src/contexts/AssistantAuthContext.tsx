@@ -36,8 +36,8 @@ export function AssistantAuthProvider({ children }: { children: ReactNode }) {
         .eq('key', 'assistant_password')
         .maybeSingle();
 
-      const correctUsername = usernameData?.value || 'assistant';
-      const correctPassword = passwordData?.value || 'assistant123';
+      const correctUsername = (usernameData?.value || 'assistant').trim();
+      const correctPassword = (passwordData?.value || 'assistant123').trim();
 
       if (username === correctUsername && password === correctPassword) {
         localStorage.setItem('assistant_auth', 'true');
