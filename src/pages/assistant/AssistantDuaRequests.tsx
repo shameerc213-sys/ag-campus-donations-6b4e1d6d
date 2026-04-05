@@ -1,18 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAssistantAuth } from '@/contexts/AssistantAuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw } from 'lucide-react';
+import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import VoiceRecorder from '@/components/dua/VoiceRecorder';
+import AttachmentPreview from '@/components/dua/AttachmentPreview';
+import ShareButton from '@/components/dua/ShareButton';
+import { useFileUpload } from '@/hooks/useFileUpload';
 
 interface DuaReply {
   id: string;
   reply_text: string;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
 }
 
 interface DuaRequest {
@@ -22,6 +28,8 @@ interface DuaRequest {
   reply: string | null;
   status: string | null;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
   donors?: { name: string } | null;
   replies?: DuaReply[];
 }
@@ -32,9 +40,13 @@ const AssistantDuaRequests = () => {
   const [requests, setRequests] = useState<DuaRequest[]>([]);
   const [replyingId, setReplyingId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
+  const [replyAttachment, setReplyAttachment] = useState<File | Blob | null>(null);
+  const [replyAttachmentType, setReplyAttachmentType] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { uploadFile, uploading } = useFileUpload();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate('/assistant', { replace: true });
@@ -77,24 +89,41 @@ const AssistantDuaRequests = () => {
   };
 
   const handleReply = async (id: string) => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() && !replyAttachment) return;
     try {
+      let attachUrl: string | null = null;
+      let attachType: string | null = null;
+
+      if (replyAttachment) {
+        const result = await uploadFile(replyAttachment, 'replies');
+        if (result) {
+          attachUrl = result.url;
+          attachType = result.type;
+        }
+      }
+
+      const replyMessage = replyText.trim() || (attachType === 'audio' ? '🎤 വോയിസ് മെസേജ്' : '📎 അറ്റാച്ച്മെന്റ്');
+
       await supabase.from('dua_replies').insert({
         dua_request_id: id,
-        reply_text: replyText.trim(),
+        reply_text: replyMessage,
+        attachment_url: attachUrl,
+        attachment_type: attachType,
       });
 
       await supabase.from('dua_requests').update({
         status: 'replied',
-        reply: replyText.trim(),
+        reply: replyMessage,
         updated_at: new Date().toISOString(),
       }).eq('id', id);
 
       setReplyingId(null);
       setReplyText('');
+      setReplyAttachment(null);
+      setReplyAttachmentType('');
       fetchRequests();
       toast({ title: 'മറുപടി നൽകി' });
-    } catch (error) {
+    } catch {
       toast({ title: 'Error', variant: 'destructive' });
     }
   };
@@ -165,13 +194,16 @@ const AssistantDuaRequests = () => {
                       {new Date(req.created_at).toLocaleDateString('ml-IN')}
                     </p>
                   </div>
-                  <Badge variant={req.status === 'replied' ? 'default' : 'secondary'}>
-                    {req.status === 'replied' ? (
-                      <><CheckCircle2 className="w-3 h-3 mr-1" />മറുപടി നൽകി</>
-                    ) : (
-                      <><Clock className="w-3 h-3 mr-1" />കാത്തിരിക്കുന്നു</>
-                    )}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    <ShareButton text={req.message} url={req.attachment_url || undefined} />
+                    <Badge variant={req.status === 'replied' ? 'default' : 'secondary'}>
+                      {req.status === 'replied' ? (
+                        <><CheckCircle2 className="w-3 h-3 mr-1" />മറുപടി നൽകി</>
+                      ) : (
+                        <><Clock className="w-3 h-3 mr-1" />കാത്തിരിക്കുന്നു</>
+                      )}
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="flex items-start gap-2">
@@ -179,12 +211,24 @@ const AssistantDuaRequests = () => {
                   <p className="text-sm">{req.message}</p>
                 </div>
 
+                {req.attachment_url && (
+                  <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
+                )}
+
                 {/* Show all replies */}
                 {req.replies && req.replies.length > 0 && (
                   <div className="space-y-2">
                     {req.replies.map((reply, index) => (
                       <div key={reply.id} className="bg-accent/50 p-3 rounded-lg">
-                        <p className="text-sm">{reply.reply_text}</p>
+                        <div className="flex items-start justify-between">
+                          <p className="text-sm">{reply.reply_text}</p>
+                          <ShareButton text={reply.reply_text} url={reply.attachment_url || undefined} />
+                        </div>
+                        {reply.attachment_url && (
+                          <div className="mt-2">
+                            <AttachmentPreview url={reply.attachment_url} type={reply.attachment_type} />
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground mt-1">
                           മറുപടി {index + 1} • {new Date(reply.created_at).toLocaleDateString('ml-IN')}
                         </p>
@@ -201,17 +245,51 @@ const AssistantDuaRequests = () => {
                       placeholder="മറുപടി എഴുതുക..."
                       rows={2}
                     />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleReply(req.id)}>
-                        <Send className="w-4 h-4 mr-1" />അയക്കുക
+                    {replyAttachment && (
+                      <AttachmentPreview
+                        file={replyAttachment}
+                        type={replyAttachmentType}
+                        onRemove={() => { setReplyAttachment(null); setReplyAttachmentType(''); }}
+                      />
+                    )}
+                    <div className="flex items-center gap-2">
+                      <VoiceRecorder
+                        onRecorded={(blob) => { setReplyAttachment(blob); setReplyAttachmentType('audio'); }}
+                        disabled={!!replyAttachment}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={!!replyAttachment}
+                      >
+                        <Image className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => { setReplyingId(null); setReplyText(''); }}>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReplyAttachment(file);
+                            setReplyAttachmentType(file.type.split('/')[0]);
+                          }
+                        }}
+                      />
+                      <div className="flex-1" />
+                      <Button size="sm" onClick={() => handleReply(req.id)} disabled={uploading}>
+                        <Send className="w-4 h-4 mr-1" />{uploading ? 'അയക്കുന്നു...' : 'അയക്കുക'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => { setReplyingId(null); setReplyText(''); setReplyAttachment(null); }}>
                         റദ്ദാക്കുക
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => { setReplyingId(req.id); setReplyText(''); }}>
+                  <Button size="sm" variant="outline" onClick={() => { setReplyingId(req.id); setReplyText(''); setReplyAttachment(null); }}>
                     മറുപടി നൽകുക
                   </Button>
                 )}
