@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Camera, Video } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
@@ -45,8 +45,6 @@ const DonorDuaRequest = () => {
   const [attachment, setAttachment] = useState<File | Blob | null>(null);
   const [attachmentType, setAttachmentType] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUpload();
 
@@ -92,7 +90,6 @@ const DonorDuaRequest = () => {
       setAttachment(file);
       setAttachmentType(file.type.split('/')[0]);
     }
-    e.target.value = '';
   };
 
   const handleVoiceRecorded = (blob: Blob) => {
@@ -180,20 +177,24 @@ const DonorDuaRequest = () => {
               />
             )}
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
               <VoiceRecorder onRecorded={handleVoiceRecorded} disabled={!!attachment} />
-              <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={!!attachment}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={!!attachment}
+              >
                 <Image className="w-4 h-4" />
               </Button>
-              <Button type="button" variant="outline" size="icon" onClick={() => cameraInputRef.current?.click()} disabled={!!attachment}>
-                <Camera className="w-4 h-4" />
-              </Button>
-              <Button type="button" variant="outline" size="icon" onClick={() => videoInputRef.current?.click()} disabled={!!attachment}>
-                <Video className="w-4 h-4" />
-              </Button>
-              <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileSelect} />
-              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
-              <input ref={videoInputRef} type="file" accept="video/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
               <div className="flex-1" />
               <Button
                 onClick={handleSubmit}
@@ -226,13 +227,17 @@ const DonorDuaRequest = () => {
                       <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                       <p className="text-sm text-foreground">{req.message}</p>
                     </div>
-                    <ShareButton text={req.message} url={req.attachment_url || undefined} />
+                    <ShareButton
+                      text={req.message}
+                      url={req.attachment_url || undefined}
+                    />
                   </div>
 
                   {req.attachment_url && (
                     <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
                   )}
 
+                  {/* Replies */}
                   {req.replies && req.replies.length > 0 && (
                     <div className="space-y-2">
                       {req.replies.map((reply) => (
