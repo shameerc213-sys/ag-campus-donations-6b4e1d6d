@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Video } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
@@ -14,6 +14,17 @@ import VoiceRecorder from '@/components/dua/VoiceRecorder';
 import AttachmentPreview from '@/components/dua/AttachmentPreview';
 import ShareButton from '@/components/dua/ShareButton';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface DuaReply {
   id: string;
@@ -21,6 +32,7 @@ interface DuaReply {
   created_at: string;
   attachment_url?: string | null;
   attachment_type?: string | null;
+  sender_type?: string;
 }
 
 interface DuaRequest {
@@ -135,6 +147,21 @@ const DonorDuaRequest = () => {
     }
   };
 
+  const handleDelete = async (requestId: string) => {
+    try {
+      // Delete replies first, then the request
+      await supabase.from('dua_replies').delete().eq('dua_request_id', requestId);
+      await supabase.from('dua_requests').delete().eq('id', requestId);
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+      toast({
+        title: language === 'ml' ? 'ഡിലീറ്റ് ചെയ്തു' : 'Deleted',
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({ title: 'Error', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -222,43 +249,82 @@ const DonorDuaRequest = () => {
             {requests.map((req) => (
               <Card key={req.id} className="border-l-4 border-l-primary/50">
                 <CardContent className="pt-4 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-2 flex-1">
-                      <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-foreground">{req.message}</p>
+                  {/* Donor's message - right aligned */}
+                  <div className="flex justify-end">
+                    <div className="bg-primary/10 p-3 rounded-lg rounded-tr-none max-w-[85%]">
+                      <div className="flex items-start gap-2">
+                        <p className="text-sm text-foreground flex-1">{req.message}</p>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <ShareButton text={req.message} url={req.attachment_url || undefined} />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <Trash2 className="w-3 h-3 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {language === 'ml' ? 'ഡിലീറ്റ് ചെയ്യണോ?' : 'Delete this request?'}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {language === 'ml'
+                                    ? 'ഈ മെസ്സേജും അതിന്റെ എല്ലാ മറുപടികളും ഡിലീറ്റ് ആകും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.'
+                                    : 'This message and all its replies will be permanently deleted.'}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>
+                                  {language === 'ml' ? 'റദ്ദാക്കുക' : 'Cancel'}
+                                </AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(req.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  {language === 'ml' ? 'ഡിലീറ്റ് ചെയ്യുക' : 'Delete'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                      {req.attachment_url && (
+                        <div className="mt-2">
+                          <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1 text-right">
+                        {new Date(req.created_at).toLocaleDateString(language === 'ml' ? 'ml-IN' : 'en-IN')}
+                      </p>
                     </div>
-                    <ShareButton
-                      text={req.message}
-                      url={req.attachment_url || undefined}
-                    />
                   </div>
-
-                  {req.attachment_url && (
-                    <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
-                  )}
 
                   {/* Replies */}
                   {req.replies && req.replies.length > 0 && (
                     <div className="space-y-2">
-                      {req.replies.map((reply) => (
-                        <div key={reply.id} className="flex items-start gap-2 bg-accent/50 p-3 rounded-lg">
-                          <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-sm text-foreground">{reply.reply_text}</p>
-                            {reply.attachment_url && (
-                              <div className="mt-2">
-                                <AttachmentPreview url={reply.attachment_url} type={reply.attachment_type} />
+                      {req.replies.map((reply) => {
+                        const isFromAssistant = reply.sender_type !== 'donor';
+                        return (
+                          <div key={reply.id} className={`flex ${isFromAssistant ? 'justify-start' : 'justify-end'}`}>
+                            <div className={`p-3 rounded-lg max-w-[85%] ${
+                              isFromAssistant
+                                ? 'bg-accent/50 rounded-tl-none'
+                                : 'bg-primary/10 rounded-tr-none'
+                            }`}>
+                              <div className="flex items-start gap-2">
+                                {isFromAssistant && <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />}
+                                <p className="text-sm text-foreground flex-1">{reply.reply_text}</p>
+                                <ShareButton text={reply.reply_text} url={reply.attachment_url || undefined} />
                               </div>
-                            )}
-                            <div className="flex items-center justify-between mt-1">
-                              <p className="text-xs text-muted-foreground">
+                              {reply.attachment_url && (
+                                <div className="mt-2">
+                                  <AttachmentPreview url={reply.attachment_url} type={reply.attachment_type} />
+                                </div>
+                              )}
+                              <p className={`text-xs text-muted-foreground mt-1 ${isFromAssistant ? 'text-left' : 'text-right'}`}>
                                 {new Date(reply.created_at).toLocaleDateString(language === 'ml' ? 'ml-IN' : 'en-IN')}
                               </p>
-                              <ShareButton text={reply.reply_text} url={reply.attachment_url || undefined} />
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
@@ -268,7 +334,10 @@ const DonorDuaRequest = () => {
                     ) : (
                       <Clock className="w-3 h-3" />
                     )}
-                    <span>{new Date(req.created_at).toLocaleDateString(language === 'ml' ? 'ml-IN' : 'en-IN')}</span>
+                    <span>{req.status === 'replied'
+                      ? (language === 'ml' ? 'മറുപടി ലഭിച്ചു' : 'Replied')
+                      : (language === 'ml' ? 'കാത്തിരിക്കുന്നു' : 'Pending')
+                    }</span>
                   </div>
                 </CardContent>
               </Card>

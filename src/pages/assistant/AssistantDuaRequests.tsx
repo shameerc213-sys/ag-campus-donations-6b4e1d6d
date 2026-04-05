@@ -19,6 +19,7 @@ interface DuaReply {
   created_at: string;
   attachment_url?: string | null;
   attachment_type?: string | null;
+  sender_type?: string;
 }
 
 interface DuaRequest {
@@ -109,6 +110,7 @@ const AssistantDuaRequests = () => {
         reply_text: replyMessage,
         attachment_url: attachUrl,
         attachment_type: attachType,
+        sender_type: 'assistant',
       });
 
       await supabase.from('dua_requests').update({
@@ -206,34 +208,49 @@ const AssistantDuaRequests = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2">
-                  <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                  <p className="text-sm">{req.message}</p>
+                {/* Donor's message - left aligned (from donor's perspective) */}
+                <div className="flex justify-start">
+                  <div className="bg-muted p-3 rounded-lg rounded-tl-none max-w-[85%]">
+                    <div className="flex items-start gap-2">
+                      <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <p className="text-sm">{req.message}</p>
+                    </div>
+                    {req.attachment_url && (
+                      <div className="mt-2">
+                        <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {req.attachment_url && (
-                  <AttachmentPreview url={req.attachment_url} type={req.attachment_type} />
-                )}
-
-                {/* Show all replies */}
+                {/* Show all replies with proper alignment */}
                 {req.replies && req.replies.length > 0 && (
                   <div className="space-y-2">
-                    {req.replies.map((reply, index) => (
-                      <div key={reply.id} className="bg-accent/50 p-3 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <p className="text-sm">{reply.reply_text}</p>
-                          <ShareButton text={reply.reply_text} url={reply.attachment_url || undefined} />
-                        </div>
-                        {reply.attachment_url && (
-                          <div className="mt-2">
-                            <AttachmentPreview url={reply.attachment_url} type={reply.attachment_type} />
+                    {req.replies.map((reply) => {
+                      const isFromAssistant = reply.sender_type !== 'donor';
+                      return (
+                        <div key={reply.id} className={`flex ${isFromAssistant ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`p-3 rounded-lg max-w-[85%] ${
+                            isFromAssistant
+                              ? 'bg-primary/10 rounded-tr-none'
+                              : 'bg-muted rounded-tl-none'
+                          }`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm">{reply.reply_text}</p>
+                              <ShareButton text={reply.reply_text} url={reply.attachment_url || undefined} />
+                            </div>
+                            {reply.attachment_url && (
+                              <div className="mt-2">
+                                <AttachmentPreview url={reply.attachment_url} type={reply.attachment_type} />
+                              </div>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {isFromAssistant ? 'മറുപടി' : 'ദാതാവ്'} • {new Date(reply.created_at).toLocaleDateString('ml-IN')}
+                            </p>
                           </div>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          മറുപടി {index + 1} • {new Date(reply.created_at).toLocaleDateString('ml-IN')}
-                        </p>
-                      </div>
-                    ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
 

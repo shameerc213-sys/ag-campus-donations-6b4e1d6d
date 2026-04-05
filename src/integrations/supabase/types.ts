@@ -114,6 +114,7 @@ export type Database = {
           dua_request_id: string
           id: string
           reply_text: string
+          sender_type: string
         }
         Insert: {
           attachment_type?: string | null
@@ -122,6 +123,7 @@ export type Database = {
           dua_request_id: string
           id?: string
           reply_text: string
+          sender_type?: string
         }
         Update: {
           attachment_type?: string | null
@@ -130,6 +132,7 @@ export type Database = {
           dua_request_id?: string
           id?: string
           reply_text?: string
+          sender_type?: string
         }
         Relationships: [
           {
