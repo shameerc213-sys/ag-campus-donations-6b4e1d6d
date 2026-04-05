@@ -108,18 +108,24 @@ export type Database = {
       }
       dua_replies: {
         Row: {
+          attachment_type: string | null
+          attachment_url: string | null
           created_at: string
           dua_request_id: string
           id: string
           reply_text: string
         }
         Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           created_at?: string
           dua_request_id: string
           id?: string
           reply_text: string
         }
         Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           created_at?: string
           dua_request_id?: string
           id?: string
@@ -137,6 +143,8 @@ export type Database = {
       }
       dua_requests: {
         Row: {
+          attachment_type: string | null
+          attachment_url: string | null
           created_at: string
           donor_id: string
           id: string
@@ -146,6 +154,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           created_at?: string
           donor_id: string
           id?: string
@@ -155,6 +165,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           created_at?: string
           donor_id?: string
           id?: string
