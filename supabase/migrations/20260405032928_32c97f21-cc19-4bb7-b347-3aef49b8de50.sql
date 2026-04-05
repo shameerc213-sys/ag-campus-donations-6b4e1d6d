@@ -1,0 +1,1 @@
+ALTER TABLE public.dua_replies ADD COLUMN sender_type text NOT NULL DEFAULT 'assistant';
