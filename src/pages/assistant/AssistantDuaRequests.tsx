@@ -46,6 +46,8 @@ const AssistantDuaRequests = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUpload();
 
