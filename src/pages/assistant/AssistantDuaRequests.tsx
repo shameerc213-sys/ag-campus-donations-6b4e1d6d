@@ -285,6 +285,24 @@ const AssistantDuaRequests = () => {
                       >
                         <Image className="w-4 h-4" />
                       </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => cameraPhotoRef.current?.click()}
+                        disabled={!!replyAttachment}
+                      >
+                        <Camera className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => cameraVideoRef.current?.click()}
+                        disabled={!!replyAttachment}
+                      >
+                        <Video className="w-4 h-4" />
+                      </Button>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -295,6 +313,34 @@ const AssistantDuaRequests = () => {
                           if (file) {
                             setReplyAttachment(file);
                             setReplyAttachmentType(file.type.split('/')[0]);
+                          }
+                        }}
+                      />
+                      <input
+                        ref={cameraPhotoRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReplyAttachment(file);
+                            setReplyAttachmentType('image');
+                          }
+                        }}
+                      />
+                      <input
+                        ref={cameraVideoRef}
+                        type="file"
+                        accept="video/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReplyAttachment(file);
+                            setReplyAttachmentType('video');
                           }
                         }}
                       />
