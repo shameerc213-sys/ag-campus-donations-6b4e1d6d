@@ -217,10 +217,44 @@ const DonorDuaRequest = () => {
               >
                 <Image className="w-4 h-4" />
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => cameraPhotoRef.current?.click()}
+                disabled={!!attachment}
+              >
+                <Camera className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => cameraVideoRef.current?.click()}
+                disabled={!!attachment}
+              >
+                <Video className="w-4 h-4" />
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <input
+                ref={cameraPhotoRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <input
+                ref={cameraVideoRef}
+                type="file"
+                accept="video/*"
+                capture="environment"
                 className="hidden"
                 onChange={handleFileSelect}
               />
