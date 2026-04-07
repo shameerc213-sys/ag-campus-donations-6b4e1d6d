@@ -199,8 +199,8 @@ const DonorHome = () => {
           </div>
 
           {/* Leaders Section */}
-          <div className="flex justify-center gap-4 px-4">
-            <div className="w-36 h-44 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
+          <div className="flex justify-center gap-3 px-4">
+            <div className="w-28 h-36 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
               <img
                 src={leader2Image}
                 alt="Leader"
@@ -208,7 +208,7 @@ const DonorHome = () => {
                 loading="lazy"
               />
             </div>
-            <div className="w-36 h-44 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
+            <div className="w-28 h-36 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
               <img
                 src={leader1Image}
                 alt="Leader"
@@ -220,13 +220,13 @@ const DonorHome = () => {
         </div>
 
         {/* Campus building image fills remaining space */}
-        <div className="flex-1 min-h-[250px] relative overflow-hidden">
+        <div className="flex-1 min-h-[200px] relative overflow-hidden">
           {/* White gradient overlay at top */}
-          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-background to-transparent z-10" />
+          <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background to-transparent z-10" />
           <img
             src={campusImage}
             alt="Ajmeer Gate Campus"
-            className="w-full h-full object-cover scale-125 object-center"
+            className="w-full h-full object-cover object-bottom"
           />
         </div>
       </div>
