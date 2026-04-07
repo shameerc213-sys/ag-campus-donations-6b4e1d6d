@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight, Landmark, BookOpen, Phone, HandHeart } from 
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
 import campusImage from '@/assets/campus-building.jpg';
+import leader1Image from '@/assets/leader-1.jpg';
+import leader2Image from '@/assets/leader-2.jpg';
 
 interface MediaItem {
   id: string;
