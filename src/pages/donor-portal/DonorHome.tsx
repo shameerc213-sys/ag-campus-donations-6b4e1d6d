@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight, Landmark, BookOpen, Phone, HandHeart } from 
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
 import campusImage from '@/assets/campus-building.jpg';
+import leader1Image from '@/assets/leader-1.jpg';
+import leader2Image from '@/assets/leader-2.jpg';
 
 interface MediaItem {
   id: string;
@@ -194,6 +196,26 @@ const DonorHome = () => {
                 </button>
               </Link>
             ))}
+          </div>
+
+          {/* Leaders Section */}
+          <div className="flex justify-center gap-4 px-4">
+            <div className="w-36 h-44 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
+              <img
+                src={leader2Image}
+                alt="Leader"
+                className="w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+            <div className="w-36 h-44 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
+              <img
+                src={leader1Image}
+                alt="Leader"
+                className="w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
 
