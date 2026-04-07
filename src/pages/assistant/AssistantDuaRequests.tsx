@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw, Image } from 'lucide-react';
+import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw, Image, Camera, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import VoiceRecorder from '@/components/dua/VoiceRecorder';
 import AttachmentPreview from '@/components/dua/AttachmentPreview';
