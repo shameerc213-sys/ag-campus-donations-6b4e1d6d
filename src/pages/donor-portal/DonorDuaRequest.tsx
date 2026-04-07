@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Trash2, Camera, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
