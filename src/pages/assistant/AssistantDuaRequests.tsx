@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw, Image } from 'lucide-react';
+import { MessageCircle, Send, CheckCircle2, Clock, HandHeart, LogOut, RefreshCw, Image, Camera, Video } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import VoiceRecorder from '@/components/dua/VoiceRecorder';
 import AttachmentPreview from '@/components/dua/AttachmentPreview';
@@ -46,6 +46,8 @@ const AssistantDuaRequests = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUpload();
 
@@ -283,6 +285,24 @@ const AssistantDuaRequests = () => {
                       >
                         <Image className="w-4 h-4" />
                       </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => cameraPhotoRef.current?.click()}
+                        disabled={!!replyAttachment}
+                      >
+                        <Camera className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => cameraVideoRef.current?.click()}
+                        disabled={!!replyAttachment}
+                      >
+                        <Video className="w-4 h-4" />
+                      </Button>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -293,6 +313,34 @@ const AssistantDuaRequests = () => {
                           if (file) {
                             setReplyAttachment(file);
                             setReplyAttachmentType(file.type.split('/')[0]);
+                          }
+                        }}
+                      />
+                      <input
+                        ref={cameraPhotoRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReplyAttachment(file);
+                            setReplyAttachmentType('image');
+                          }
+                        }}
+                      />
+                      <input
+                        ref={cameraVideoRef}
+                        type="file"
+                        accept="video/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setReplyAttachment(file);
+                            setReplyAttachmentType('video');
                           }
                         }}
                       />

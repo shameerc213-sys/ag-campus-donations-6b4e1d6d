@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, CheckCircle2, Clock, Image, Trash2, Camera, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
@@ -57,6 +57,8 @@ const DonorDuaRequest = () => {
   const [attachment, setAttachment] = useState<File | Blob | null>(null);
   const [attachmentType, setAttachmentType] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUpload();
 
@@ -215,10 +217,44 @@ const DonorDuaRequest = () => {
               >
                 <Image className="w-4 h-4" />
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => cameraPhotoRef.current?.click()}
+                disabled={!!attachment}
+              >
+                <Camera className="w-4 h-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => cameraVideoRef.current?.click()}
+                disabled={!!attachment}
+              >
+                <Video className="w-4 h-4" />
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <input
+                ref={cameraPhotoRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <input
+                ref={cameraVideoRef}
+                type="file"
+                accept="video/*"
+                capture="environment"
                 className="hidden"
                 onChange={handleFileSelect}
               />
