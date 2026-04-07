@@ -57,6 +57,8 @@ const DonorDuaRequest = () => {
   const [attachment, setAttachment] = useState<File | Blob | null>(null);
   const [attachmentType, setAttachmentType] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraPhotoRef = useRef<HTMLInputElement>(null);
+  const cameraVideoRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUpload();
 
