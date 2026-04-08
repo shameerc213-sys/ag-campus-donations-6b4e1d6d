@@ -232,6 +232,9 @@ const DonorHome = () => {
             />
           </div>
         </div>
+
+        {/* Spacer for bottom nav */}
+        <div className="h-20" />
       </div>
 
       <PortalNav />
