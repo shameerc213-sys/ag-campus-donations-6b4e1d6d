@@ -232,6 +232,7 @@ const DonorHome = () => {
             />
           </div>
         </div>
+      </div>
 
       <PortalNav />
     </div>
