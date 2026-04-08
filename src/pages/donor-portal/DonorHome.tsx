@@ -202,16 +202,36 @@ const DonorHome = () => {
 
         {/* Leaders + Campus building section */}
         <div className="relative">
-          {/* Campus building image */}
-          <div className="pt-20 relative overflow-hidden">
+          {/* Leader photos - overlapping into campus image */}
+          <div className="flex justify-center gap-4 px-4 relative z-20">
+            <div className="w-32 h-40 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
+              <img
+                src={leader2Image}
+                alt="Leader"
+                className="w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+            <div className="w-32 h-40 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
+              <img
+                src={leader1Image}
+                alt="Leader"
+                className="w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          {/* Campus building image - pulled up to overlap with photos */}
+          <div className="-mt-16 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent z-10" />
-          <img
-            src={campusImage}
-            alt="Ajmeer Gate Campus"
-            className="w-full h-auto block"
-          />
+            <img
+              src={campusImage}
+              alt="Ajmeer Gate Campus"
+              className="w-full h-auto block"
+            />
+          </div>
         </div>
-      </div>
 
       <PortalNav />
     </div>
