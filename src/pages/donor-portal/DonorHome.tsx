@@ -198,9 +198,13 @@ const DonorHome = () => {
             ))}
           </div>
 
-          {/* Leaders Section */}
-          <div className="flex justify-center gap-3 px-4">
-            <div className="w-28 h-36 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
+        </div>
+
+        {/* Leaders + Campus building section */}
+        <div className="relative">
+          {/* Leader photos - overlapping into campus image */}
+          <div className="flex justify-center gap-4 px-4 relative z-20">
+            <div className="w-32 h-40 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20">
               <img
                 src={leader2Image}
                 alt="Leader"
@@ -208,7 +212,7 @@ const DonorHome = () => {
                 loading="lazy"
               />
             </div>
-            <div className="w-28 h-36 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
+            <div className="w-32 h-40 rounded-2xl overflow-hidden shadow-lg border-2 border-foreground/20">
               <img
                 src={leader1Image}
                 alt="Leader"
@@ -217,17 +221,16 @@ const DonorHome = () => {
               />
             </div>
           </div>
-        </div>
 
-        {/* Campus building image */}
-        <div className="relative overflow-hidden">
-          {/* White gradient overlay at top */}
-          <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background to-transparent z-10" />
-          <img
-            src={campusImage}
-            alt="Ajmeer Gate Campus"
-            className="w-full h-auto block"
-          />
+          {/* Campus building image - pulled up to overlap with photos */}
+          <div className="-mt-16 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent z-10" />
+            <img
+              src={campusImage}
+              alt="Ajmeer Gate Campus"
+              className="w-full h-auto block"
+            />
+          </div>
         </div>
       </div>
 
