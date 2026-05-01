@@ -23,6 +23,7 @@ import InitiativesManager from '@/components/admin/InitiativesManager';
 import GatheringsManager from '@/components/admin/GatheringsManager';
 import ContactsManager from '@/components/admin/ContactsManager';
 import DuaRequestsManager from '@/components/admin/DuaRequestsManager';
+import PortalLinksCard from '@/components/admin/PortalLinksCard';
 
 interface OrgSettings {
   org_name: string;
@@ -503,6 +504,7 @@ const Settings = () => {
 
         {/* Portal Management */}
         <TabsContent value="portal" className="space-y-4">
+          <PortalLinksCard />
           <InitiativesManager />
           <GatheringsManager />
           <ContactsManager />
