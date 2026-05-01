@@ -108,17 +108,12 @@ const DonorLogin = () => {
               <Label htmlFor="password">{t('auth.password')}</Label>
               <PasswordInput
                 id="password"
-                placeholder="OM + Phone Number"
+                placeholder={language === 'ml' ? 'പാസ്‌വേഡ്' : 'Password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="border-input"
               />
-              <p className="text-xs text-muted-foreground">
-                {language === 'ml' 
-                  ? 'ഉദാ: OM9876543210 (OM + നിങ്ങളുടെ ഫോൺ നമ്പർ)'
-                  : 'Example: OM9876543210 (OM + your phone number)'}
-              </p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t('auth.waiting') : t('auth.login')}
