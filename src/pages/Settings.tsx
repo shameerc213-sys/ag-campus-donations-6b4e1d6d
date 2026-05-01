@@ -503,6 +503,7 @@ const Settings = () => {
 
         {/* Portal Management */}
         <TabsContent value="portal" className="space-y-4">
+          <PortalLinksCard />
           <InitiativesManager />
           <GatheringsManager />
           <ContactsManager />
