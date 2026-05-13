@@ -22,6 +22,7 @@ const DonorsList = () => {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<FilterTab>('all');
 
   useEffect(() => {
     fetchDonors();
