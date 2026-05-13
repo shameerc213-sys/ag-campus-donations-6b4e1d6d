@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, User, IndianRupee, Download, MapPin } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Donor {
   id: string;
@@ -12,7 +13,10 @@ interface Donor {
   phone: string | null;
   address: string | null;
   total_donations: number;
+  paid_this_month: boolean;
 }
+
+type FilterTab = 'all' | 'unpaid' | 'paid';
 
 const DonorsList = () => {
   const [donors, setDonors] = useState<Donor[]>([]);
