@@ -129,6 +129,13 @@ const DonorsList = () => {
             className="pl-10"
           />
         </div>
+        <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)}>
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="all">എല്ലാവരും ({donors.length})</TabsTrigger>
+            <TabsTrigger value="unpaid">ബാക്കി ({unpaidCount})</TabsTrigger>
+            <TabsTrigger value="paid">തന്നവർ ({paidCount})</TabsTrigger>
+          </TabsList>
+        </Tabs>
         {searchQuery && filteredDonors.length > 0 && (
           <div className="flex items-center justify-between bg-accent/50 p-2 rounded-lg">
             <span className="text-sm text-muted-foreground">
