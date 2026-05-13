@@ -36,16 +36,22 @@ const DonorsList = () => {
         .order('name');
 
       if (donorsData) {
-        // Fetch donation totals for each donor
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().split('T')[0];
+
         const donorsWithTotals = await Promise.all(
           donorsData.map(async (donor) => {
             const { data: donations } = await supabase
               .from('donations')
-              .select('amount')
+              .select('amount, donation_date')
               .eq('donor_id', donor.id);
             
             const total = donations?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
-            return { ...donor, total_donations: total };
+            const paid_this_month = !!donations?.some(
+              (d) => d.donation_date >= monthStart && d.donation_date < monthEnd
+            );
+            return { ...donor, total_donations: total, paid_this_month };
           })
         );
         setDonors(donorsWithTotals);
@@ -57,11 +63,20 @@ const DonorsList = () => {
     }
   };
 
-  const filteredDonors = donors.filter((donor) =>
-    donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (donor.phone && donor.phone.includes(searchQuery)) ||
-    (donor.address && donor.address.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredDonors = donors
+    .filter((donor) => {
+      if (filter === 'paid') return donor.paid_this_month;
+      if (filter === 'unpaid') return !donor.paid_this_month;
+      return true;
+    })
+    .filter((donor) =>
+      donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (donor.phone && donor.phone.includes(searchQuery)) ||
+      (donor.address && donor.address.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+  const paidCount = donors.filter((d) => d.paid_this_month).length;
+  const unpaidCount = donors.length - paidCount;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ml-IN', {
