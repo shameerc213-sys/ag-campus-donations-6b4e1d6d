@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X } from 'lucide-react';
+import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X, FileDown, Send, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { z } from 'zod';
+import ClusterSelect from '@/components/admin/ClusterSelect';
+import { downloadReceipt, generateReceiptPDF } from '@/lib/receipt';
 
 interface Donor {
   id: string;
@@ -18,6 +20,8 @@ interface Donor {
   address: string | null;
   notes: string | null;
   created_at: string;
+  cluster_id: string | null;
+  sub_cluster_id: string | null;
 }
 
 interface Donation {
@@ -25,6 +29,7 @@ interface Donation {
   amount: number;
   donation_date: string;
   notes: string | null;
+  receipt_number: string | null;
 }
 
 const donationSchema = z.object({
@@ -55,6 +60,9 @@ const DonorProfile = () => {
   const [editDonorPhone, setEditDonorPhone] = useState('');
   const [editDonorAddress, setEditDonorAddress] = useState('');
   const [editDonorNotes, setEditDonorNotes] = useState('');
+  const [editClusterId, setEditClusterId] = useState<string | null>(null);
+  const [editSubClusterId, setEditSubClusterId] = useState<string | null>(null);
+  const [busyReceipt, setBusyReceipt] = useState<string | null>(null);
   const { toast } = useToast();
 
   const getPublicLink = () => {
@@ -284,6 +292,8 @@ const DonorProfile = () => {
       setEditDonorPhone(donor.phone || '');
       setEditDonorAddress(donor.address || '');
       setEditDonorNotes(donor.notes || '');
+      setEditClusterId(donor.cluster_id);
+      setEditSubClusterId(donor.sub_cluster_id);
       setEditingDonor(true);
     }
   };
@@ -315,6 +325,8 @@ const DonorProfile = () => {
           phone: editDonorPhone.trim() || null,
           address: editDonorAddress.trim() || null,
           notes: editDonorNotes.trim() || null,
+          cluster_id: editClusterId,
+          sub_cluster_id: editSubClusterId,
         })
         .eq('id', donor.id);
 
@@ -428,6 +440,11 @@ const DonorProfile = () => {
                   placeholder="വിലാസം"
                 />
               </div>
+              <ClusterSelect
+                clusterId={editClusterId}
+                subClusterId={editSubClusterId}
+                onChange={(c, s) => { setEditClusterId(c); setEditSubClusterId(s); }}
+              />
               <div className="space-y-2">
                 <Label htmlFor="donor-notes">കുറിപ്പുകൾ</Label>
                 <Input
@@ -670,6 +687,11 @@ const DonorProfile = () => {
                           <p className="font-bold text-foreground">
                             {formatCurrency(donation.amount)}
                           </p>
+                          {donation.receipt_number && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Receipt className="w-3 h-3" />#{donation.receipt_number}
+                            </p>
+                          )}
                           {donation.notes && (
                             <p className="text-xs text-muted-foreground">{donation.notes}</p>
                           )}
@@ -683,6 +705,77 @@ const DonorProfile = () => {
                           </p>
                         </div>
                         <div className="flex gap-1">
+                          {donation.receipt_number && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-primary"
+                                title="PDF ഡൗൺലോഡ്"
+                                disabled={busyReceipt === donation.id}
+                                onClick={async () => {
+                                  if (!donor) return;
+                                  setBusyReceipt(donation.id);
+                                  try {
+                                    await downloadReceipt({
+                                      receipt_number: donation.receipt_number!,
+                                      donor_name: donor.name,
+                                      donor_phone: donor.phone,
+                                      donor_address: donor.address,
+                                      amount: donation.amount,
+                                      donation_date: donation.donation_date,
+                                      notes: donation.notes,
+                                    });
+                                  } finally { setBusyReceipt(null); }
+                                }}
+                              >
+                                <FileDown className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-secondary"
+                                title="WhatsApp ഷെയർ"
+                                disabled={busyReceipt === donation.id}
+                                onClick={async () => {
+                                  if (!donor) return;
+                                  setBusyReceipt(donation.id);
+                                  try {
+                                    const blob = await generateReceiptPDF({
+                                      receipt_number: donation.receipt_number!,
+                                      donor_name: donor.name,
+                                      donor_phone: donor.phone,
+                                      donor_address: donor.address,
+                                      amount: donation.amount,
+                                      donation_date: donation.donation_date,
+                                      notes: donation.notes,
+                                    });
+                                    const file = new File([blob], `Receipt_${donation.receipt_number}.pdf`, { type: 'application/pdf' });
+                                    const nav: any = navigator;
+                                    if (nav.canShare && nav.canShare({ files: [file] })) {
+                                      await nav.share({ files: [file], title: `Receipt ${donation.receipt_number}` });
+                                    } else {
+                                      // fallback: download + open WhatsApp
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = file.name;
+                                      a.click();
+                                      setTimeout(() => URL.revokeObjectURL(url), 1000);
+                                      if (donor.phone) {
+                                        const phone = donor.phone.replace(/\D/g, '');
+                                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Receipt #' + donation.receipt_number)}`, '_blank');
+                                      }
+                                    }
+                                  } catch (e: any) {
+                                    toast({ title: 'Error', description: e.message, variant: 'destructive' });
+                                  } finally { setBusyReceipt(null); }
+                                }}
+                              >
+                                <Send className="w-3 h-3" />
+                              </Button>
+                            </>
+                          )}
                           <Button
                             size="icon"
                             variant="ghost"

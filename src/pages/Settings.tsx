@@ -24,6 +24,8 @@ import GatheringsManager from '@/components/admin/GatheringsManager';
 import ContactsManager from '@/components/admin/ContactsManager';
 import DuaRequestsManager from '@/components/admin/DuaRequestsManager';
 import PortalLinksCard from '@/components/admin/PortalLinksCard';
+import ClustersManager from '@/components/admin/ClustersManager';
+import BrandingManager from '@/components/admin/BrandingManager';
 
 interface OrgSettings {
   org_name: string;
@@ -276,10 +278,14 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="org" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="org" className="flex items-center gap-1">
             <Building className="w-4 h-4" />
             <span className="hidden sm:inline">സ്ഥാപനം</span>
+          </TabsTrigger>
+          <TabsTrigger value="clusters" className="flex items-center gap-1">
+            <Landmark className="w-4 h-4" />
+            <span className="hidden sm:inline">ക്ലസ്റ്റർ</span>
           </TabsTrigger>
           <TabsTrigger value="media" className="flex items-center gap-1">
             <Image className="w-4 h-4" />
@@ -294,6 +300,10 @@ const Settings = () => {
             <span className="hidden sm:inline">ആപ്പ്</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="clusters" className="space-y-4">
+          <ClustersManager />
+        </TabsContent>
 
         {/* Organization Settings */}
         <TabsContent value="org">
@@ -385,6 +395,8 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+
+          <BrandingManager />
         </TabsContent>
 
         {/* Media Settings */}

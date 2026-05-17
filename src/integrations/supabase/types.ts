@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      clusters: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           created_at: string
@@ -49,6 +73,7 @@ export type Database = {
           donor_id: string
           id: string
           notes: string | null
+          receipt_number: string | null
         }
         Insert: {
           amount: number
@@ -57,6 +82,7 @@ export type Database = {
           donor_id: string
           id?: string
           notes?: string | null
+          receipt_number?: string | null
         }
         Update: {
           amount?: number
@@ -65,6 +91,7 @@ export type Database = {
           donor_id?: string
           id?: string
           notes?: string | null
+          receipt_number?: string | null
         }
         Relationships: [
           {
@@ -79,32 +106,53 @@ export type Database = {
       donors: {
         Row: {
           address: string | null
+          cluster_id: string | null
           created_at: string
           id: string
           name: string
           notes: string | null
           phone: string | null
+          sub_cluster_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          cluster_id?: string | null
           created_at?: string
           id?: string
           name: string
           notes?: string | null
           phone?: string | null
+          sub_cluster_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          cluster_id?: string | null
           created_at?: string
           id?: string
           name?: string
           notes?: string | null
           phone?: string | null
+          sub_cluster_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "donors_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donors_sub_cluster_id_fkey"
+            columns: ["sub_cluster_id"]
+            isOneToOne: false
+            referencedRelation: "sub_clusters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dua_replies: {
         Row: {
@@ -214,6 +262,70 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      monthly_cluster_orders: {
+        Row: {
+          cluster_id: string
+          created_at: string
+          id: string
+          month: string
+          sort_order: number
+        }
+        Insert: {
+          cluster_id: string
+          created_at?: string
+          id?: string
+          month: string
+          sort_order?: number
+        }
+        Update: {
+          cluster_id?: string
+          created_at?: string
+          id?: string
+          month?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_cluster_orders_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_sub_cluster_orders: {
+        Row: {
+          created_at: string
+          id: string
+          month: string
+          sort_order: number
+          sub_cluster_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: string
+          sort_order?: number
+          sub_cluster_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: string
+          sort_order?: number
+          sub_cluster_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_sub_cluster_orders_sub_cluster_id_fkey"
+            columns: ["sub_cluster_id"]
+            isOneToOne: false
+            referencedRelation: "sub_clusters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       org_media: {
         Row: {
@@ -337,6 +449,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sub_clusters: {
+        Row: {
+          cluster_id: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          cluster_id: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cluster_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_clusters_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

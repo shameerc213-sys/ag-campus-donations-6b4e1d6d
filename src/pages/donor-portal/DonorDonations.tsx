@@ -4,16 +4,20 @@ import { useDonorAuth } from '@/contexts/DonorAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, User, Phone, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, User, Phone, MapPin, FileDown, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
+import { downloadReceipt } from '@/lib/receipt';
+import { useToast } from '@/hooks/use-toast';
 
 interface Donation {
   id: string;
   amount: number;
   donation_date: string;
   notes: string | null;
+  receipt_number: string | null;
 }
 
 const DonorDonations = () => {
@@ -22,6 +26,8 @@ const DonorDonations = () => {
   const navigate = useNavigate();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(true);
+  const [busyReceipt, setBusyReceipt] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !donor) navigate('/portal');
@@ -36,7 +42,7 @@ const DonorDonations = () => {
     try {
       const { data } = await supabase
         .from('donations')
-        .select('id, amount, donation_date, notes')
+        .select('id, amount, donation_date, notes, receipt_number')
         .eq('donor_id', donor.id)
         .order('donation_date', { ascending: false });
       setDonations(data?.map(d => ({ ...d, amount: Number(d.amount) })) || []);
@@ -114,19 +120,52 @@ const DonorDonations = () => {
             ) : (
               <div className="space-y-3">
                 {donations.map((donation, index) => (
-                  <div key={donation.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border-l-4 border-l-secondary">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-secondary/20 rounded-full flex items-center justify-center text-xs font-bold text-secondary">
+                  <div key={donation.id} className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg border-l-4 border-l-secondary">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 shrink-0 bg-secondary/20 rounded-full flex items-center justify-center text-xs font-bold text-secondary">
                         {index + 1}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-bold text-foreground">{formatCurrency(donation.amount)}</p>
-                        {donation.notes && <p className="text-xs text-muted-foreground">{donation.notes}</p>}
+                        {donation.receipt_number && (
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Receipt className="w-3 h-3" />#{donation.receipt_number}
+                          </p>
+                        )}
+                        {donation.notes && <p className="text-xs text-muted-foreground truncate">{donation.notes}</p>}
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
-                    </p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
+                      </p>
+                      {donation.receipt_number && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-primary"
+                          disabled={busyReceipt === donation.id}
+                          onClick={async () => {
+                            setBusyReceipt(donation.id);
+                            try {
+                              await downloadReceipt({
+                                receipt_number: donation.receipt_number!,
+                                donor_name: donor.name,
+                                donor_phone: donor.phone,
+                                donor_address: donor.address,
+                                amount: donation.amount,
+                                donation_date: donation.donation_date,
+                                notes: donation.notes,
+                              });
+                            } catch (e: any) {
+                              toast({ title: 'Error', description: e.message, variant: 'destructive' });
+                            } finally { setBusyReceipt(null); }
+                          }}
+                        >
+                          <FileDown className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
