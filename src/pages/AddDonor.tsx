@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus } from 'lucide-react';
 import { z } from 'zod';
+import ClusterSelect from '@/components/admin/ClusterSelect';
 
 const donorSchema = z.object({
   name: z.string().trim().min(1, 'പേര് നൽകുക').max(100, 'പേര് വളരെ നീളമുള്ളതാണ്'),
@@ -22,25 +23,20 @@ const AddDonor = () => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [clusterId, setClusterId] = useState<string | null>(null);
+  const [subClusterId, setSubClusterId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const validation = donorSchema.safeParse({ name, phone, address, notes });
     if (!validation.success) {
-      toast({
-        title: 'Error',
-        description: validation.error.errors[0].message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: validation.error.errors[0].message, variant: 'destructive' });
       return;
     }
-
     setLoading(true);
-    
     try {
       const { data, error } = await supabase
         .from('donors')
@@ -49,24 +45,16 @@ const AddDonor = () => {
           phone: phone.trim() || null,
           address: address.trim() || null,
           notes: notes.trim() || null,
+          cluster_id: clusterId,
+          sub_cluster_id: subClusterId,
         })
         .select()
         .single();
-
       if (error) throw error;
-
-      toast({
-        title: 'വിജയകരം!',
-        description: 'പുതിയ ദാതാവ് ചേർത്തു',
-      });
-
+      toast({ title: 'വിജയകരം!', description: 'പുതിയ ദാതാവ് ചേർത്തു' });
       navigate(`/donor/${data.id}`);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -87,46 +75,26 @@ const AddDonor = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">പേര് *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="ദാതാവിന്റെ പേര്"
-                required
-              />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="ദാതാവിന്റെ പേര്" required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="phone">ഫോൺ നമ്പർ</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="ഫോൺ നമ്പർ"
-              />
+              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="ഫോൺ നമ്പർ" />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="address">വിലാസം</Label>
-              <Textarea
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="വിലാസം"
-                rows={2}
-              />
+              <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="വിലാസം" rows={2} />
             </div>
+
+            <ClusterSelect
+              clusterId={clusterId}
+              subClusterId={subClusterId}
+              onChange={(c, s) => { setClusterId(c); setSubClusterId(s); }}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="notes">കുറിപ്പുകൾ</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="കൂടുതൽ വിവരങ്ങൾ..."
-                rows={2}
-              />
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="കൂടുതൽ വിവരങ്ങൾ..." rows={2} />
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
