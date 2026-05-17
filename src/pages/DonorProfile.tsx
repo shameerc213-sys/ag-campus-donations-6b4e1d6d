@@ -60,6 +60,9 @@ const DonorProfile = () => {
   const [editDonorPhone, setEditDonorPhone] = useState('');
   const [editDonorAddress, setEditDonorAddress] = useState('');
   const [editDonorNotes, setEditDonorNotes] = useState('');
+  const [editClusterId, setEditClusterId] = useState<string | null>(null);
+  const [editSubClusterId, setEditSubClusterId] = useState<string | null>(null);
+  const [busyReceipt, setBusyReceipt] = useState<string | null>(null);
   const { toast } = useToast();
 
   const getPublicLink = () => {
@@ -289,6 +292,8 @@ const DonorProfile = () => {
       setEditDonorPhone(donor.phone || '');
       setEditDonorAddress(donor.address || '');
       setEditDonorNotes(donor.notes || '');
+      setEditClusterId(donor.cluster_id);
+      setEditSubClusterId(donor.sub_cluster_id);
       setEditingDonor(true);
     }
   };
@@ -320,6 +325,8 @@ const DonorProfile = () => {
           phone: editDonorPhone.trim() || null,
           address: editDonorAddress.trim() || null,
           notes: editDonorNotes.trim() || null,
+          cluster_id: editClusterId,
+          sub_cluster_id: editSubClusterId,
         })
         .eq('id', donor.id);
 
