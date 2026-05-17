@@ -440,6 +440,11 @@ const DonorProfile = () => {
                   placeholder="വിലാസം"
                 />
               </div>
+              <ClusterSelect
+                clusterId={editClusterId}
+                subClusterId={editSubClusterId}
+                onChange={(c, s) => { setEditClusterId(c); setEditSubClusterId(s); }}
+              />
               <div className="space-y-2">
                 <Label htmlFor="donor-notes">കുറിപ്പുകൾ</Label>
                 <Input
