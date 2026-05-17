@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X } from 'lucide-react';
+import { User, IndianRupee, Calendar, Plus, Phone, MapPin, Share2, Check, Pencil, Trash2, X, FileDown, Send, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { z } from 'zod';
+import ClusterSelect from '@/components/admin/ClusterSelect';
+import { downloadReceipt, generateReceiptPDF } from '@/lib/receipt';
 
 interface Donor {
   id: string;
@@ -18,6 +20,8 @@ interface Donor {
   address: string | null;
   notes: string | null;
   created_at: string;
+  cluster_id: string | null;
+  sub_cluster_id: string | null;
 }
 
 interface Donation {
@@ -25,6 +29,7 @@ interface Donation {
   amount: number;
   donation_date: string;
   notes: string | null;
+  receipt_number: string | null;
 }
 
 const donationSchema = z.object({
