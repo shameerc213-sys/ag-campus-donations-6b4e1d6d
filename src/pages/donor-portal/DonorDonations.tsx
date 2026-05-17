@@ -4,16 +4,20 @@ import { useDonorAuth } from '@/contexts/DonorAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, User, Phone, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, User, Phone, MapPin, FileDown, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
+import { downloadReceipt } from '@/lib/receipt';
+import { useToast } from '@/hooks/use-toast';
 
 interface Donation {
   id: string;
   amount: number;
   donation_date: string;
   notes: string | null;
+  receipt_number: string | null;
 }
 
 const DonorDonations = () => {
