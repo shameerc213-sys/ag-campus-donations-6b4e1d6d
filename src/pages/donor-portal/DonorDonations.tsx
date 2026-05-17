@@ -26,6 +26,8 @@ const DonorDonations = () => {
   const navigate = useNavigate();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loadingDonations, setLoadingDonations] = useState(true);
+  const [busyReceipt, setBusyReceipt] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && !donor) navigate('/portal');
@@ -40,7 +42,7 @@ const DonorDonations = () => {
     try {
       const { data } = await supabase
         .from('donations')
-        .select('id, amount, donation_date, notes')
+        .select('id, amount, donation_date, notes, receipt_number')
         .eq('donor_id', donor.id)
         .order('donation_date', { ascending: false });
       setDonations(data?.map(d => ({ ...d, amount: Number(d.amount) })) || []);
