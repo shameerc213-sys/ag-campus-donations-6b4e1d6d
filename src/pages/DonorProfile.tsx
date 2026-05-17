@@ -687,6 +687,11 @@ const DonorProfile = () => {
                           <p className="font-bold text-foreground">
                             {formatCurrency(donation.amount)}
                           </p>
+                          {donation.receipt_number && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Receipt className="w-3 h-3" />#{donation.receipt_number}
+                            </p>
+                          )}
                           {donation.notes && (
                             <p className="text-xs text-muted-foreground">{donation.notes}</p>
                           )}
@@ -700,6 +705,77 @@ const DonorProfile = () => {
                           </p>
                         </div>
                         <div className="flex gap-1">
+                          {donation.receipt_number && (
+                            <>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-primary"
+                                title="PDF ഡൗൺലോഡ്"
+                                disabled={busyReceipt === donation.id}
+                                onClick={async () => {
+                                  if (!donor) return;
+                                  setBusyReceipt(donation.id);
+                                  try {
+                                    await downloadReceipt({
+                                      receipt_number: donation.receipt_number!,
+                                      donor_name: donor.name,
+                                      donor_phone: donor.phone,
+                                      donor_address: donor.address,
+                                      amount: donation.amount,
+                                      donation_date: donation.donation_date,
+                                      notes: donation.notes,
+                                    });
+                                  } finally { setBusyReceipt(null); }
+                                }}
+                              >
+                                <FileDown className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-secondary"
+                                title="WhatsApp ഷെയർ"
+                                disabled={busyReceipt === donation.id}
+                                onClick={async () => {
+                                  if (!donor) return;
+                                  setBusyReceipt(donation.id);
+                                  try {
+                                    const blob = await generateReceiptPDF({
+                                      receipt_number: donation.receipt_number!,
+                                      donor_name: donor.name,
+                                      donor_phone: donor.phone,
+                                      donor_address: donor.address,
+                                      amount: donation.amount,
+                                      donation_date: donation.donation_date,
+                                      notes: donation.notes,
+                                    });
+                                    const file = new File([blob], `Receipt_${donation.receipt_number}.pdf`, { type: 'application/pdf' });
+                                    const nav: any = navigator;
+                                    if (nav.canShare && nav.canShare({ files: [file] })) {
+                                      await nav.share({ files: [file], title: `Receipt ${donation.receipt_number}` });
+                                    } else {
+                                      // fallback: download + open WhatsApp
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = file.name;
+                                      a.click();
+                                      setTimeout(() => URL.revokeObjectURL(url), 1000);
+                                      if (donor.phone) {
+                                        const phone = donor.phone.replace(/\D/g, '');
+                                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent('Receipt #' + donation.receipt_number)}`, '_blank');
+                                      }
+                                    }
+                                  } catch (e: any) {
+                                    toast({ title: 'Error', description: e.message, variant: 'destructive' });
+                                  } finally { setBusyReceipt(null); }
+                                }}
+                              >
+                                <Send className="w-3 h-3" />
+                              </Button>
+                            </>
+                          )}
                           <Button
                             size="icon"
                             variant="ghost"
