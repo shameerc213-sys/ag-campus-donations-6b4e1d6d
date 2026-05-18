@@ -67,8 +67,8 @@ export function amountInWords(num: number): string {
   if (lakh) str += twoDigits(lakh) + ' Lakh ';
   if (thousand) str += twoDigits(thousand) + ' Thousand ';
   if (n) str += threeDigits(n);
-  str = str.trim() + ' Rupees';
-  if (paise) str += ' and ' + twoDigits(paise) + ' Paise';
+  str = str.trim() + ' Omani Rial';
+  if (paise) str += ' and ' + twoDigits(paise) + ' Baisa';
   return str + ' Only';
 }
 
