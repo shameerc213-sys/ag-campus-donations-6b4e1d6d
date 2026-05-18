@@ -37,7 +37,7 @@ export async function loadOrgInfo(force = false): Promise<OrgInfo> {
 
 // Indian numbering: amount in words
 export function amountInWords(num: number): string {
-  if (num === 0) return 'Zero Rupees Only';
+  if (num === 0) return 'Zero Omani Rial Only';
   const a = [
     '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
