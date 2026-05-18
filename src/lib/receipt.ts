@@ -97,7 +97,7 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo): string {
         <tr><td style="padding:6px 0; width:140px; color:#555;">Received From</td><td style="padding:6px 0; font-weight:600;">${escapeHtml(r.donor_name)}</td></tr>
         ${r.donor_phone ? `<tr><td style="padding:6px 0; color:#555;">Phone</td><td style="padding:6px 0;">${escapeHtml(r.donor_phone)}</td></tr>` : ''}
         ${r.donor_address ? `<tr><td style="padding:6px 0; color:#555;">Address</td><td style="padding:6px 0;">${escapeHtml(r.donor_address)}</td></tr>` : ''}
-        <tr><td style="padding:6px 0; color:#555;">Amount</td><td style="padding:6px 0; font-size:18px; font-weight:800; color:#0b6e3a;">Rs. ${amountFmt}</td></tr>
+        <tr><td style="padding:6px 0; color:#555;">Amount</td><td style="padding:6px 0; font-size:18px; font-weight:800; color:#0b6e3a;">OMR ${amountFmt}</td></tr>
         <tr><td style="padding:6px 0; color:#555; vertical-align:top;">In Words</td><td style="padding:6px 0; font-style:italic;">${amountInWords(r.amount)}</td></tr>
         ${r.notes ? `<tr><td style="padding:6px 0; color:#555;">Notes</td><td style="padding:6px 0;">${escapeHtml(r.notes)}</td></tr>` : ''}
       </table>
