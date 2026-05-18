@@ -70,9 +70,9 @@ const PublicDonorView = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ml-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'OMR',
       minimumFractionDigits: 0,
     }).format(amount);
   };

@@ -80,7 +80,7 @@ const DonorsList = () => {
   };
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('ml-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 0 }).format(amount);
 
   const orderedClusters = useMemo(
     () => [...clusters].sort((a, b) => (monthOrders[a.id] ?? a.sort_order) - (monthOrders[b.id] ?? b.sort_order)),
@@ -168,7 +168,7 @@ const DonorsList = () => {
             <div className="text-right shrink-0">
               <div className="flex items-center gap-1 text-primary font-bold">
                 <IndianRupee className="w-4 h-4" />
-                <span>{formatCurrency(d.total_donations).replace('₹', '')}</span>
+                <span>{formatCurrency(d.total_donations)}</span>
               </div>
               {d.paid_this_month && <p className="text-[10px] text-secondary font-semibold">തന്നു</p>}
             </div>

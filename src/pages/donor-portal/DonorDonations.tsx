@@ -54,7 +54,7 @@ const DonorDonations = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ml-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 0 }).format(amount);
   };
 
   if (loading) {
