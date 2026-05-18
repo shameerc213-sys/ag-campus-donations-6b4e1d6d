@@ -37,7 +37,7 @@ export async function loadOrgInfo(force = false): Promise<OrgInfo> {
 
 // Indian numbering: amount in words
 export function amountInWords(num: number): string {
-  if (num === 0) return 'Zero Rupees Only';
+  if (num === 0) return 'Zero Omani Rial Only';
   const a = [
     '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
@@ -67,14 +67,14 @@ export function amountInWords(num: number): string {
   if (lakh) str += twoDigits(lakh) + ' Lakh ';
   if (thousand) str += twoDigits(thousand) + ' Thousand ';
   if (n) str += threeDigits(n);
-  str = str.trim() + ' Rupees';
-  if (paise) str += ' and ' + twoDigits(paise) + ' Paise';
+  str = str.trim() + ' Omani Rial';
+  if (paise) str += ' and ' + twoDigits(paise) + ' Baisa';
   return str + ' Only';
 }
 
 function buildReceiptHTML(r: ReceiptData, org: OrgInfo): string {
   const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB');
-  const amountFmt = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(r.amount);
+  const amountFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(r.amount);
   return `
     <div style="width: 800px; padding: 40px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box; border: 2px solid #0b6e3a;">
       <div style="display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #0b6e3a; padding-bottom: 16px;">
@@ -97,7 +97,7 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo): string {
         <tr><td style="padding:6px 0; width:140px; color:#555;">Received From</td><td style="padding:6px 0; font-weight:600;">${escapeHtml(r.donor_name)}</td></tr>
         ${r.donor_phone ? `<tr><td style="padding:6px 0; color:#555;">Phone</td><td style="padding:6px 0;">${escapeHtml(r.donor_phone)}</td></tr>` : ''}
         ${r.donor_address ? `<tr><td style="padding:6px 0; color:#555;">Address</td><td style="padding:6px 0;">${escapeHtml(r.donor_address)}</td></tr>` : ''}
-        <tr><td style="padding:6px 0; color:#555;">Amount</td><td style="padding:6px 0; font-size:18px; font-weight:800; color:#0b6e3a;">Rs. ${amountFmt}</td></tr>
+        <tr><td style="padding:6px 0; color:#555;">Amount</td><td style="padding:6px 0; font-size:18px; font-weight:800; color:#0b6e3a;">OMR ${amountFmt}</td></tr>
         <tr><td style="padding:6px 0; color:#555; vertical-align:top;">In Words</td><td style="padding:6px 0; font-style:italic;">${amountInWords(r.amount)}</td></tr>
         ${r.notes ? `<tr><td style="padding:6px 0; color:#555;">Notes</td><td style="padding:6px 0;">${escapeHtml(r.notes)}</td></tr>` : ''}
       </table>

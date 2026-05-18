@@ -189,9 +189,9 @@ const DonorProfile = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ml-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'OMR',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -564,7 +564,7 @@ const DonorProfile = () => {
           <CardContent>
             <form onSubmit={handleAddDonation} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">തുക (₹) *</Label>
+                <Label htmlFor="amount">തുക (OMR) *</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -632,7 +632,7 @@ const DonorProfile = () => {
                   {editingDonation?.id === donation.id ? (
                     <div className="p-3 bg-muted/50 rounded-lg space-y-3">
                       <div className="space-y-2">
-                        <Label htmlFor="edit-amount">തുക (₹)</Label>
+                        <Label htmlFor="edit-amount">തുക (OMR)</Label>
                         <Input
                           id="edit-amount"
                           type="number"
@@ -800,7 +800,7 @@ const DonorProfile = () => {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>സംഭാവന നീക്കം ചെയ്യണോ?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  ₹{donation.amount} സംഭാവന ശാശ്വതമായി നീക്കം ചെയ്യും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.
+                                  OMR {donation.amount} സംഭാവന ശാശ്വതമായി നീക്കം ചെയ്യും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
