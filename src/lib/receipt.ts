@@ -74,7 +74,7 @@ export function amountInWords(num: number): string {
 
 function buildReceiptHTML(r: ReceiptData, org: OrgInfo): string {
   const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB');
-  const amountFmt = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(r.amount);
+  const amountFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(r.amount);
   return `
     <div style="width: 800px; padding: 40px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box; border: 2px solid #0b6e3a;">
       <div style="display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #0b6e3a; padding-bottom: 16px;">
