@@ -16,6 +16,7 @@ interface OrgInfo {
   org_name?: string;
   org_address?: string;
   org_phone?: string;
+  org_phone2?: string;
   org_email?: string;
   org_logo_url?: string;
   seal_url?: string;
@@ -78,11 +79,13 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo): string {
   return `
     <div style="width: 800px; padding: 40px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box; border: 2px solid #0b6e3a;">
       <div style="display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #0b6e3a; padding-bottom: 16px;">
-        ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:70px; width:70px; object-fit:contain;"/>` : ''}
+        ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:80px; width:80px; object-fit:contain;"/>` : ''}
         <div style="flex:1; text-align:center;">
           <div style="font-size: 26px; font-weight: 800; color:#0b6e3a;">${escapeHtml(org.org_name || '')}</div>
-          <div style="font-size: 12px; margin-top:4px; color:#555;">${escapeHtml(org.org_address || '')}</div>
-          <div style="font-size: 11px; color:#666;">${org.org_phone ? 'Ph: ' + escapeHtml(org.org_phone) : ''} ${org.org_email ? ' &nbsp; ' + escapeHtml(org.org_email) : ''}</div>
+          <div style="font-size: 12px; margin-top:4px; color:#555; white-space: pre-line;">${escapeHtml(org.org_address || '')}</div>
+          <div style="font-size: 11px; color:#666; margin-top:2px;">
+            ${org.org_phone ? 'Ph: ' + escapeHtml(org.org_phone) : ''}${org.org_phone2 ? ', ' + escapeHtml(org.org_phone2) : ''}${org.org_email ? ' &nbsp;|&nbsp; ' + escapeHtml(org.org_email) : ''}
+          </div>
         </div>
       </div>
 
@@ -136,9 +139,21 @@ export async function generateReceiptPDF(r: ReceiptData): Promise<Blob> {
   document.body.appendChild(wrapper);
   try {
     const node = wrapper.firstElementChild as HTMLElement;
-    const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-    const img = canvas.toDataURL('image/jpeg', 0.95);
-    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    // Wait for all images to load to avoid blurry/missing assets in PDF
+    const imgs = Array.from(node.querySelectorAll('img'));
+    await Promise.all(
+      imgs.map((img) =>
+        img.complete && img.naturalWidth > 0
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            })
+      )
+    );
+    const canvas = await html2canvas(node, { scale: 3, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 15000 });
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const ratio = canvas.height / canvas.width;
@@ -146,7 +161,7 @@ export async function generateReceiptPDF(r: ReceiptData): Promise<Blob> {
     const imgH = imgW * ratio;
     const finalH = Math.min(imgH, pageH - 40);
     const finalW = finalH === imgH ? imgW : (pageH - 40) / ratio;
-    pdf.addImage(img, 'JPEG', (pageW - finalW) / 2, 20, finalW, finalH);
+    pdf.addImage(img, 'PNG', (pageW - finalW) / 2, 20, finalW, finalH, undefined, 'FAST');
     return pdf.output('blob');
   } finally {
     wrapper.remove();
