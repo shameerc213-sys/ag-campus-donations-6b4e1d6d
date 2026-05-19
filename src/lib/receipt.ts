@@ -16,6 +16,7 @@ interface OrgInfo {
   org_name?: string;
   org_address?: string;
   org_phone?: string;
+  org_phone2?: string;
   org_email?: string;
   org_logo_url?: string;
   seal_url?: string;
