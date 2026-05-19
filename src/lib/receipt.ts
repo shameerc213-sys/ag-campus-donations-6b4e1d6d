@@ -139,9 +139,21 @@ export async function generateReceiptPDF(r: ReceiptData): Promise<Blob> {
   document.body.appendChild(wrapper);
   try {
     const node = wrapper.firstElementChild as HTMLElement;
-    const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-    const img = canvas.toDataURL('image/jpeg', 0.95);
-    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    // Wait for all images to load to avoid blurry/missing assets in PDF
+    const imgs = Array.from(node.querySelectorAll('img'));
+    await Promise.all(
+      imgs.map((img) =>
+        img.complete && img.naturalWidth > 0
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            })
+      )
+    );
+    const canvas = await html2canvas(node, { scale: 3, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 15000 });
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const ratio = canvas.height / canvas.width;
@@ -149,7 +161,7 @@ export async function generateReceiptPDF(r: ReceiptData): Promise<Blob> {
     const imgH = imgW * ratio;
     const finalH = Math.min(imgH, pageH - 40);
     const finalW = finalH === imgH ? imgW : (pageH - 40) / ratio;
-    pdf.addImage(img, 'JPEG', (pageW - finalW) / 2, 20, finalW, finalH);
+    pdf.addImage(img, 'PNG', (pageW - finalW) / 2, 20, finalW, finalH, undefined, 'FAST');
     return pdf.output('blob');
   } finally {
     wrapper.remove();
