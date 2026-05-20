@@ -77,70 +77,82 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo & { org_subtitle?: string
   const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
   const amountFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(r.amount);
   const phones = [org.org_phone, org.org_phone2].filter(Boolean).join(', ');
+  // Bold the prefix before ":" in initiatives line
+  let initiativesHtml = '';
+  if (org.org_initiatives) {
+    const txt = org.org_initiatives;
+    const idx = txt.indexOf(':');
+    if (idx > 0) {
+      initiativesHtml = `<span style="font-weight:800;">${escapeHtml(txt.slice(0, idx + 1))}</span>${escapeHtml(txt.slice(idx + 1))}`;
+    } else {
+      initiativesHtml = escapeHtml(txt);
+    }
+  }
+  // Receipt aspect 4:5 (width:height) => width 640, target height ~800
   return `
-    <div style="width: 800px; padding: 36px 40px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box;">
-      <!-- HEADER: logo left, org info right -->
-      <div style="display: flex; align-items: flex-start; gap: 20px;">
-        ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:130px; width:auto; object-fit:contain; flex-shrink:0;"/>` : '<div style="width:130px;"></div>'}
+    <div style="width: 640px; padding: 24px 28px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box;">
+      <!-- HEADER: logo left, org info center; logo height ~= name + address block -->
+      <div style="display: flex; align-items: center; gap: 16px;">
+        ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:120px; width:auto; object-fit:contain; flex-shrink:0;"/>` : '<div style="width:120px;"></div>'}
         <div style="flex:1; text-align:center;">
-          <div style="font-size: 34px; font-weight: 800; color:#0b6e3a; line-height:1.1;">${escapeHtml(org.org_name || '')}</div>
-          ${org.org_subtitle ? `<div style="font-size: 15px; margin-top:8px; color:#222;">${escapeHtml(org.org_subtitle)}</div>` : ''}
-          ${org.org_address ? `<div style="font-size: 13px; margin-top:8px; color:#333; white-space: pre-line;">${escapeHtml(org.org_address)}</div>` : ''}
-          <div style="font-size: 12px; color:#333; margin-top:8px;">
+          <div style="font-size: 22px; font-weight: 800; color:#0b6e3a; line-height:1.15; white-space:nowrap;">${escapeHtml(org.org_name || '')}</div>
+          ${org.org_subtitle ? `<div style="font-size: 12px; margin-top:6px; color:#222;">${escapeHtml(org.org_subtitle)}</div>` : ''}
+          ${org.org_address ? `<div style="font-size: 11px; margin-top:6px; color:#333; white-space: pre-line; line-height:1.45;">${escapeHtml(org.org_address)}</div>` : ''}
+          <div style="font-size: 11px; color:#333; margin-top:4px;">
             ${phones ? 'Ph: ' + escapeHtml(phones) : ''}${org.org_email ? ' &nbsp;|&nbsp; ' + escapeHtml(org.org_email) : ''}
           </div>
         </div>
       </div>
 
-      <!-- RECEIPT BODY inside green rounded box -->
-      <div style="margin-top: 18px; border: 2px solid #0b6e3a; border-radius: 16px; padding: 28px 32px;">
-        <div style="text-align:center; font-size: 22px; font-weight:700; color:#111; margin-bottom: 22px;">DONATION RECEIPT</div>
+      <!-- RECEIPT BODY -->
+      <div style="margin-top: 14px; border: 2px solid #0b6e3a; border-radius: 12px; padding: 16px 20px;">
+        <div style="text-align:center; font-size: 17px; font-weight:700; color:#111; margin-bottom: 12px;">DONATION RECEIPT</div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size: 16px; margin-bottom: 22px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size: 13px; margin-bottom: 12px;">
           <div><span style="color:#c0392b; font-weight:700;">Receipt no:</span> <span style="color:#c0392b; font-weight:800;">${escapeHtml(r.receipt_number)}</span></div>
           <div style="color:#222;">Date: ${dateFmt}</div>
         </div>
 
-        <table style="width:100%; font-size: 15px; border-collapse: collapse;">
+        <table style="width:100%; font-size: 12px; border-collapse: collapse;">
           <tr>
-            <td style="padding:10px 0; width:180px; color:#222;">Recieved from</td>
-            <td style="padding:10px 0; font-weight:600;">${escapeHtml(r.donor_name)}</td>
+            <td style="padding:5px 0; width:130px; color:#222;">Recieved from</td>
+            <td style="padding:5px 0; font-weight:600;">${escapeHtml(r.donor_name)}</td>
           </tr>
           <tr>
-            <td style="padding:10px 0; color:#222;">Amount</td>
-            <td style="padding:10px 0; font-size:17px; font-weight:700; color:#0b6e3a;">${amountFmt} OMR</td>
+            <td style="padding:5px 0; color:#222;">Amount</td>
+            <td style="padding:5px 0; font-size:14px; font-weight:700; color:#0b6e3a;">${amountFmt} OMR</td>
           </tr>
           <tr>
-            <td style="padding:10px 0; color:#222; vertical-align:top;">In words</td>
-            <td style="padding:10px 0;">${amountInWords(r.amount)}</td>
+            <td style="padding:5px 0; color:#222; vertical-align:top;">In words</td>
+            <td style="padding:5px 0;">${amountInWords(r.amount)}</td>
           </tr>
-          ${r.notes ? `<tr><td style="padding:10px 0; color:#222;">Notes</td><td style="padding:10px 0;">${escapeHtml(r.notes)}</td></tr>` : ''}
+          ${r.notes ? `<tr><td style="padding:5px 0; color:#222;">Notes</td><td style="padding:5px 0;">${escapeHtml(r.notes)}</td></tr>` : ''}
         </table>
 
-        <div style="margin-top: 18px; padding: 14px 16px; background: #eef5ec; font-size: 14px; font-style: italic; color:#222;">
+        <div style="margin-top: 10px; padding: 9px 12px; background: #eef5ec; font-size: 11px; font-style: italic; color:#222;">
           Thankyou for your generous contribution , May Allah accept your charity and reward you abundantly.
         </div>
 
         <!-- SEAL + SIGNATURE -->
-        <div style="margin-top: 50px; display:flex; justify-content: space-between; align-items: flex-end;">
-          <div style="text-align:center; min-width:220px; position:relative;">
-            <div style="height:110px; display:flex; align-items:center; justify-content:center;">
-              ${org.seal_url ? `<img src="${org.seal_url}" crossorigin="anonymous" style="height:110px; max-width:200px; object-fit:contain; transform: rotate(-18deg); transform-origin: center;"/>` : ''}
+        <div style="margin-top: 24px; display:flex; justify-content: space-between; align-items: flex-end;">
+          <div style="text-align:center; min-width:200px; position:relative;">
+            <div style="height:160px; display:flex; align-items:center; justify-content:center;">
+              ${org.seal_url ? `<img src="${org.seal_url}" crossorigin="anonymous" style="height:160px; max-width:210px; object-fit:contain; transform: rotate(-18deg); transform-origin: center;"/>` : ''}
             </div>
-            <div style="border-top:1px solid #555; margin-top:6px; padding-top:6px; font-size: 14px;">official seal</div>
+            <div style="border-top:1px solid #555; margin-top:4px; padding-top:4px; font-size: 11px;">official seal</div>
           </div>
-          <div style="text-align:center; min-width:220px;">
-            <div style="height:110px; display:flex; align-items:flex-end; justify-content:center;">
-              ${org.signature_url ? `<img src="${org.signature_url}" crossorigin="anonymous" style="height:90px; max-width:200px; object-fit:contain;"/>` : ''}
+          <div style="text-align:center; min-width:200px;">
+            <div style="height:90px; display:flex; align-items:flex-end; justify-content:center;">
+              ${org.signature_url ? `<img src="${org.signature_url}" crossorigin="anonymous" style="height:80px; max-width:180px; object-fit:contain;"/>` : ''}
             </div>
-            <div style="border-top:1px solid #555; margin-top:6px; padding-top:6px; font-size: 14px;">Organizer signature</div>
+            <div style="border-top:1px solid #555; margin-top:4px; padding-top:4px; font-size: 11px;">Organizer signature</div>
           </div>
         </div>
       </div>
 
-      ${org.org_initiatives ? `
-        <div style="margin-top: 22px; font-size: 13px; color:#0b6e3a; text-align:center; line-height:1.6;">
-          <span style="font-weight:700;">${escapeHtml(org.org_initiatives)}</span>
+      ${initiativesHtml ? `
+        <div style="margin-top: 12px; font-size: 11px; color:#0b6e3a; text-align:center; line-height:1.5;">
+          ${initiativesHtml}
         </div>
       ` : ''}
     </div>
