@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, Stamp, PenTool, Hash, Image as ImageIcon, Phone, Pencil } from 'lucide-react';
+import { Upload, Stamp, PenTool, Hash, Image as ImageIcon, Phone, Pencil, FileText, List } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import SignaturePad from './SignaturePad';
 
