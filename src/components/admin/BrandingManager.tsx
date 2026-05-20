@@ -19,6 +19,8 @@ const BrandingManager = () => {
     org_logo_url: '',
     receipt_prefix: '',
     org_phone2: '',
+    org_subtitle: '',
+    org_initiatives: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
