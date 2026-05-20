@@ -163,6 +163,31 @@ const BrandingManager = () => {
           </div>
         </div>
 
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2"><FileText className="w-4 h-4" />ഉപശീർഷകം (Run by)</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Run by: ..."
+              value={values.org_subtitle}
+              onChange={(e) => setValues(prev => ({ ...prev, org_subtitle: e.target.value }))}
+            />
+            <Button onClick={async () => { await upsert('org_subtitle', values.org_subtitle.trim()); toast({ title: 'സേവ് ചെയ്തു' }); }}>സേവ്</Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2"><List className="w-4 h-4" />സംരംഭങ്ങൾ (റസീറ്റിന്റെ താഴെ കാണിക്കും)</Label>
+          <div className="flex gap-2">
+            <Textarea
+              rows={3}
+              placeholder="അജ്മീർ ഗേറ്റ് സംരംഭങ്ങൾ : ..."
+              value={values.org_initiatives}
+              onChange={(e) => setValues(prev => ({ ...prev, org_initiatives: e.target.value }))}
+            />
+            <Button onClick={async () => { await upsert('org_initiatives', values.org_initiatives.trim()); toast({ title: 'സേവ് ചെയ്തു' }); }}>സേവ്</Button>
+          </div>
+        </div>
+
         <AssetRow k="org_logo_url" label="ലോഗോ" Icon={ImageIcon} />
         <AssetRow k="seal_url" label="സീൽ" Icon={Stamp} />
         <AssetRow
