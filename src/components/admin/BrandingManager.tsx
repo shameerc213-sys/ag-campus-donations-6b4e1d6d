@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, Stamp, PenTool, Hash, Image as ImageIcon, Phone, Pencil } from 'lucide-react';
+import { Upload, Stamp, PenTool, Hash, Image as ImageIcon, Phone, Pencil, FileText, List } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import SignaturePad from './SignaturePad';
 
@@ -18,6 +19,8 @@ const BrandingManager = () => {
     org_logo_url: '',
     receipt_prefix: '',
     org_phone2: '',
+    org_subtitle: '',
+    org_initiatives: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,7 +37,7 @@ const BrandingManager = () => {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('organization_settings').select('key, value');
-    const obj: Record<string, string> = { seal_url: '', signature_url: '', org_logo_url: '', receipt_prefix: '', org_phone2: '' };
+    const obj: Record<string, string> = { seal_url: '', signature_url: '', org_logo_url: '', receipt_prefix: '', org_phone2: '', org_subtitle: '', org_initiatives: '' };
     (data || []).forEach(r => { if (r.key in obj) obj[r.key] = r.value || ''; });
     setValues(obj);
     setLoading(false);
@@ -157,6 +160,31 @@ const BrandingManager = () => {
               onChange={(e) => setValues(prev => ({ ...prev, org_phone2: e.target.value }))}
             />
             <Button onClick={savePhone2} disabled={savingPhone}>സേവ്</Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2"><FileText className="w-4 h-4" />ഉപശീർഷകം (Run by)</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Run by: ..."
+              value={values.org_subtitle}
+              onChange={(e) => setValues(prev => ({ ...prev, org_subtitle: e.target.value }))}
+            />
+            <Button onClick={async () => { await upsert('org_subtitle', values.org_subtitle.trim()); toast({ title: 'സേവ് ചെയ്തു' }); }}>സേവ്</Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2"><List className="w-4 h-4" />സംരംഭങ്ങൾ (റസീറ്റിന്റെ താഴെ കാണിക്കും)</Label>
+          <div className="flex gap-2">
+            <Textarea
+              rows={3}
+              placeholder="അജ്മീർ ഗേറ്റ് സംരംഭങ്ങൾ : ..."
+              value={values.org_initiatives}
+              onChange={(e) => setValues(prev => ({ ...prev, org_initiatives: e.target.value }))}
+            />
+            <Button onClick={async () => { await upsert('org_initiatives', values.org_initiatives.trim()); toast({ title: 'സേവ് ചെയ്തു' }); }}>സേവ്</Button>
           </div>
         </div>
 
