@@ -37,7 +37,7 @@ const BrandingManager = () => {
 
   const fetchSettings = async () => {
     const { data } = await supabase.from('organization_settings').select('key, value');
-    const obj: Record<string, string> = { seal_url: '', signature_url: '', org_logo_url: '', receipt_prefix: '', org_phone2: '' };
+    const obj: Record<string, string> = { seal_url: '', signature_url: '', org_logo_url: '', receipt_prefix: '', org_phone2: '', org_subtitle: '', org_initiatives: '' };
     (data || []).forEach(r => { if (r.key in obj) obj[r.key] = r.value || ''; });
     setValues(obj);
     setLoading(false);
