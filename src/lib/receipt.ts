@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { supabase } from '@/integrations/supabase/client';
+import templateUrl from '@/assets/receipt-template.jpg';
 
 export interface ReceiptData {
   receipt_number: string;
@@ -55,7 +55,7 @@ export function amountInWords(num: number): string {
     return (h ? a[h] + ' Hundred' + (r ? ' ' : '') : '') + (r ? twoDigits(r) : '');
   };
   const rupees = Math.floor(num);
-  const paise = Math.round((num - rupees) * 100);
+  const paise = Math.round((num - rupees) * 1000);
   let n = rupees;
   let str = '';
   const crore = Math.floor(n / 10000000);
@@ -68,151 +68,104 @@ export function amountInWords(num: number): string {
   if (lakh) str += twoDigits(lakh) + ' Lakh ';
   if (thousand) str += twoDigits(thousand) + ' Thousand ';
   if (n) str += threeDigits(n);
-  str = str.trim() + ' Omani Rial';
-  if (paise) str += ' and ' + twoDigits(paise) + ' Baisa';
+  str = str.trim() + ' Omani Riyal';
+  if (paise) str += ' and ' + threeDigits(paise) + ' Baisa';
   return str + ' Only';
 }
 
-function buildReceiptHTML(r: ReceiptData, org: OrgInfo & { org_subtitle?: string; org_initiatives?: string }): string {
-  const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
-  const amountFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(r.amount);
-  const phones = [org.org_phone, org.org_phone2].filter(Boolean).join(', ');
-  const cleanAddressLines = (org.org_address || '')
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !/ajmeer\s*gate\s*campus/i.test(line))
-    .filter((line) => !/ansarul|run\s*by/i.test(line));
-  const addressLine1 = cleanAddressLines[0] || 'Karad paramb PO, Ferook college Vi, 673632 Pin,';
-  const addressLine2 = cleanAddressLines[1] || 'Malappuram Dt, Kerala St, India';
-  // Bold the prefix before ":" in initiatives line
-  let initiativesHtml = '';
-  if (org.org_initiatives) {
-    const txt = org.org_initiatives;
-    const idx = txt.indexOf(':');
-    if (idx > 0) {
-      initiativesHtml = `<span style="font-weight:800;">${escapeHtml(txt.slice(0, idx + 1))}</span>${escapeHtml(txt.slice(idx + 1))}`;
-    } else {
-      initiativesHtml = escapeHtml(txt);
-    }
-  }
-  return `
-    <div style="width: 640px; padding: 20px; font-family: 'Helvetica', Arial, sans-serif; color: #1a1a1a; background: #ffffff; box-sizing: border-box;">
-      <!-- MAIN CARD with green border -->
-      <div style="border: 2px solid #2E7D32; border-radius: 20px; padding: 24px;">
-        <!-- HEADER: logo left, 5 stacked lines right -->
-        <div style="display:flex; align-items:flex-end; gap:16px; min-height:150px;">
-          <div style="flex: 0 0 170px; display:flex; align-items:flex-end; justify-content:center; margin-top:-24px;">
-            ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:178px; max-width:170px; object-fit:contain;"/>` : ''}
-          </div>
-          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; text-align:left; padding-bottom:4px;">
-            <div style="font-size: 25px; font-weight: 800; color:#1b5e20; line-height:1.08; white-space:nowrap;">${escapeHtml(org.org_name || 'Ajmeer Gate Campus Karad')}</div>
-            <div style="font-size: 13px; margin-top:5px; color:#333; font-weight:700; line-height:1.2;">${escapeHtml(org.org_subtitle || 'Run by : Ansarul muslimeen sangam')}</div>
-            <div style="font-size: 12.5px; margin-top:6px; color:#555; line-height:1.35;">${escapeHtml(addressLine1)}</div>
-            <div style="font-size: 12.5px; color:#555; line-height:1.35;">${escapeHtml(addressLine2)}</div>
-            ${(phones || org.org_email) ? `<div style="font-size: 12.5px; color:#555; line-height:1.35;">${phones ? 'Ph:' + escapeHtml(phones) : ''}${org.org_email ? (phones ? ' | ' : '') + escapeHtml(org.org_email) : ''}</div>` : ''}
-          </div>
-        </div>
-
-        <!-- TITLE -->
-        <div style="text-align:center; font-size: 22px; font-weight: 800; letter-spacing:2px; text-transform:uppercase; color:#000; margin: 18px 0 14px;">DONATION RECEIPT</div>
-
-        <!-- Receipt no & Date -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
-          <div style="color:#dc2626; font-weight:700; font-size:17px;">Receipt no: ${escapeHtml(r.receipt_number)}</div>
-          <div style="font-size:14px; font-weight:500; color:#222;">Date: ${dateFmt}</div>
-        </div>
-
-        <!-- Fields -->
-        <table style="width:100%; font-size: 15px; border-collapse: collapse;">
-          <tr>
-            <td style="padding:7px 0; width:140px; color:#444;">Received from</td>
-            <td style="padding:7px 0;">: <span style="font-weight:600;">${escapeHtml(r.donor_name)}</span></td>
-          </tr>
-          <tr>
-            <td style="padding:7px 0; color:#444;">Amount</td>
-            <td style="padding:7px 0;">: <span style="color:#1b5e20; font-weight:700; font-size:20px;">${amountFmt} OMR</span></td>
-          </tr>
-          <tr>
-            <td style="padding:7px 0; color:#444; vertical-align:top;">In words</td>
-            <td style="padding:7px 0;">: ${amountInWords(r.amount)}</td>
-          </tr>
-          ${r.notes ? `<tr><td style="padding:7px 0; color:#444; vertical-align:top;">Notes</td><td style="padding:7px 0;">: ${escapeHtml(r.notes)}</td></tr>` : ''}
-        </table>
-
-        <!-- Thank you: 2 lines -->
-        <div style="margin-top: 16px; background:#f3f4f6; padding: 12px 14px; border-radius:6px; text-align:center; font-size:13.5px; font-style:italic; color:#444; line-height:1.55;">
-          <div>Thank you for your generous contribution,</div>
-          <div>May Allah accept your charity and reward you abundantly.</div>
-        </div>
-
-        <!-- Seal + Signature -->
-        <div style="margin-top: 14px; display:flex; justify-content: space-between; align-items: flex-end;">
-          <div style="text-align:center; width:45%;">
-            <div style="height:160px; display:flex; align-items:center; justify-content:center;">
-              ${org.seal_url ? `<img src="${org.seal_url}" crossorigin="anonymous" style="height:160px; max-width:100%; object-fit:contain; transform: rotate(-18deg);"/>` : ''}
-            </div>
-            <div style="border-top:1px solid #9ca3af; width:160px; margin: 0 auto; padding-top:3px; font-size:12px; color:#444;">official seal</div>
-          </div>
-          <div style="text-align:center; width:45%;">
-            <div style="height:160px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px;">
-              ${org.signature_url ? `<img src="${org.signature_url}" crossorigin="anonymous" style="height:90px; max-width:100%; object-fit:contain;"/>` : ''}
-            </div>
-            <div style="border-top:1px solid #9ca3af; width:160px; margin: 0 auto; padding-top:3px; font-size:12px; color:#444;">Organizer signature</div>
-          </div>
-        </div>
-      </div>
-
-      ${initiativesHtml ? `
-        <div style="margin-top: 14px; font-size: 12px; color:#1b5e20; text-align:center; line-height:1.5; font-weight:500;">
-          ${initiativesHtml}
-        </div>
-      ` : ''}
-    </div>
-  `;
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
 }
 
-function escapeHtml(s: string) {
-  return (s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+// Draw text and shrink font size if it overflows maxWidth
+function drawFit(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  startSize: number,
+  weight: string,
+  color: string,
+  align: CanvasTextAlign = 'left',
+) {
+  let size = startSize;
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.textBaseline = 'alphabetic';
+  while (size > 14) {
+    ctx.font = `${weight} ${size}px Helvetica, Arial, sans-serif`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  }
+  ctx.fillText(text, x, y);
+}
+
+async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
+  const img = await loadImage(templateUrl);
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(img, 0, 0);
+
+  // Cover dynamic-field areas with white to wipe template values
+  ctx.fillStyle = '#ffffff';
+  // Receipt no value
+  ctx.fillRect(455, 625, 360, 90);
+  // Date value (keep "Date:" label visible — start after it)
+  ctx.fillRect(1115, 625, 320, 90);
+  // Received from value
+  ctx.fillRect(705, 775, 750, 90);
+  // Amount value
+  ctx.fillRect(705, 888, 750, 90);
+  // In words value
+  ctx.fillRect(705, 1000, 750, 90);
+
+  const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB', {
+    day: '2-digit', month: '2-digit', year: '2-digit',
+  });
+  const amountFmt = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 3, maximumFractionDigits: 3,
+  }).format(r.amount);
+
+  // Receipt number (red, bold)
+  drawFit(ctx, r.receipt_number, 470, 695, 340, 54, '800', '#b91c1c');
+  // Date (black)
+  drawFit(ctx, dateFmt, 1130, 695, 310, 48, '500', '#111111');
+  // Donor name
+  drawFit(ctx, r.donor_name, 720, 845, 730, 50, '700', '#111111');
+  // Amount (green, bold)
+  drawFit(ctx, `${amountFmt} OMR`, 720, 958, 730, 50, '800', '#1b5e20');
+  // In words
+  drawFit(ctx, amountInWords(r.amount), 720, 1070, 730, 44, '500', '#111111');
+
+  return canvas;
 }
 
 export async function generateReceiptPDF(r: ReceiptData): Promise<Blob> {
-  const org = await loadOrgInfo();
-  const wrapper = document.createElement('div');
-  wrapper.style.position = 'fixed';
-  wrapper.style.left = '-10000px';
-  wrapper.style.top = '0';
-  wrapper.innerHTML = buildReceiptHTML(r, org);
-  document.body.appendChild(wrapper);
-  try {
-    const node = wrapper.firstElementChild as HTMLElement;
-    // Wait for all images to load to avoid blurry/missing assets in PDF
-    const imgs = Array.from(node.querySelectorAll('img'));
-    await Promise.all(
-      imgs.map((img) =>
-        img.complete && img.naturalWidth > 0
-          ? Promise.resolve()
-          : new Promise<void>((resolve) => {
-              img.onload = () => resolve();
-              img.onerror = () => resolve();
-            })
-      )
-    );
-    const canvas = await html2canvas(node, { scale: 3, useCORS: true, backgroundColor: '#ffffff', imageTimeout: 15000 });
-    const img = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const ratio = canvas.height / canvas.width;
-    const imgW = pageW - 40;
-    const imgH = imgW * ratio;
-    const finalH = Math.min(imgH, pageH - 40);
-    const finalW = finalH === imgH ? imgW : (pageH - 40) / ratio;
-    pdf.addImage(img, 'PNG', (pageW - finalW) / 2, 20, finalW, finalH, undefined, 'FAST');
-    return pdf.output('blob');
-  } finally {
-    wrapper.remove();
+  await loadOrgInfo();
+  const canvas = await renderReceiptCanvas(r);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+  const pdf = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const ratio = canvas.height / canvas.width;
+  const margin = 20;
+  let imgW = pageW - margin * 2;
+  let imgH = imgW * ratio;
+  if (imgH > pageH - margin * 2) {
+    imgH = pageH - margin * 2;
+    imgW = imgH / ratio;
   }
+  pdf.addImage(dataUrl, 'JPEG', (pageW - imgW) / 2, (pageH - imgH) / 2, imgW, imgH, undefined, 'FAST');
+  return pdf.output('blob');
 }
 
 export async function downloadReceipt(r: ReceiptData) {
