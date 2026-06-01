@@ -77,6 +77,14 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo & { org_subtitle?: string
   const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
   const amountFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(r.amount);
   const phones = [org.org_phone, org.org_phone2].filter(Boolean).join(', ');
+  const cleanAddressLines = (org.org_address || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/ajmeer\s*gate\s*campus/i.test(line))
+    .filter((line) => !/ansarul|run\s*by/i.test(line));
+  const addressLine1 = cleanAddressLines[0] || 'Karad paramb PO, Ferook college Vi, 673632 Pin,';
+  const addressLine2 = cleanAddressLines[1] || 'Malappuram Dt, Kerala St, India';
   // Bold the prefix before ":" in initiatives line
   let initiativesHtml = '';
   if (org.org_initiatives) {
@@ -93,15 +101,16 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo & { org_subtitle?: string
       <!-- MAIN CARD with green border -->
       <div style="border: 2px solid #2E7D32; border-radius: 20px; padding: 24px;">
         <!-- HEADER: logo left, 5 stacked lines right -->
-        <div style="display:flex; align-items:stretch; gap:18px;">
-          <div style="flex: 0 0 130px; display:flex; align-items:flex-end; justify-content:center; margin-top:-14px;">
-            ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="max-height:130px; max-width:130px; object-fit:contain;"/>` : ''}
+        <div style="display:flex; align-items:flex-end; gap:16px; min-height:150px;">
+          <div style="flex: 0 0 170px; display:flex; align-items:flex-end; justify-content:center; margin-top:-24px;">
+            ${org.org_logo_url ? `<img src="${org.org_logo_url}" crossorigin="anonymous" style="height:178px; max-width:170px; object-fit:contain;"/>` : ''}
           </div>
-          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; text-align:left;">
-            <div style="font-size: 24px; font-weight: 800; color:#1b5e20; line-height:1.15;">${escapeHtml(org.org_name || '')}</div>
-            ${org.org_subtitle ? `<div style="font-size: 13px; margin-top:4px; color:#333; font-weight:700;">${escapeHtml(org.org_subtitle)}</div>` : ''}
-            ${org.org_address ? `<div style="font-size: 12px; margin-top:4px; color:#555; white-space: pre-line; line-height:1.45;">${escapeHtml(org.org_address)}</div>` : ''}
-            ${(phones || org.org_email) ? `<div style="font-size: 12px; color:#555; margin-top:2px;">${phones ? 'Ph:' + escapeHtml(phones) : ''}${org.org_email ? (phones ? '|' : '') + escapeHtml(org.org_email) : ''}</div>` : ''}
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; text-align:left; padding-bottom:4px;">
+            <div style="font-size: 25px; font-weight: 800; color:#1b5e20; line-height:1.08; white-space:nowrap;">${escapeHtml(org.org_name || 'Ajmeer Gate Campus Karad')}</div>
+            <div style="font-size: 13px; margin-top:5px; color:#333; font-weight:700; line-height:1.2;">${escapeHtml(org.org_subtitle || 'Run by : Ansarul muslimeen sangam')}</div>
+            <div style="font-size: 12.5px; margin-top:6px; color:#555; line-height:1.35;">${escapeHtml(addressLine1)}</div>
+            <div style="font-size: 12.5px; color:#555; line-height:1.35;">${escapeHtml(addressLine2)}</div>
+            ${(phones || org.org_email) ? `<div style="font-size: 12.5px; color:#555; line-height:1.35;">${phones ? 'Ph:' + escapeHtml(phones) : ''}${org.org_email ? (phones ? ' | ' : '') + escapeHtml(org.org_email) : ''}</div>` : ''}
           </div>
         </div>
 
@@ -132,8 +141,9 @@ function buildReceiptHTML(r: ReceiptData, org: OrgInfo & { org_subtitle?: string
         </table>
 
         <!-- Thank you: 2 lines -->
-        <div style="margin-top: 16px; background:#f3f4f6; padding: 12px 14px; border-radius:6px; text-align:center; font-size:13px; font-style:italic; color:#444; line-height:1.6;">
-          Thankyou for your generous contribution,<br/>May Allah accept your charity and reward you abundantly.
+        <div style="margin-top: 16px; background:#f3f4f6; padding: 12px 14px; border-radius:6px; text-align:center; font-size:13.5px; font-style:italic; color:#444; line-height:1.55;">
+          <div>Thank you for your generous contribution,</div>
+          <div>May Allah accept your charity and reward you abundantly.</div>
         </div>
 
         <!-- Seal + Signature -->
