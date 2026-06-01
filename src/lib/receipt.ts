@@ -116,17 +116,18 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
   ctx.drawImage(img, 0, 0);
 
   // Cover dynamic-field areas with white to wipe template values
+  // (carefully avoid labels on the left and the green border on the right)
   ctx.fillStyle = '#ffffff';
-  // Receipt no value
-  ctx.fillRect(455, 625, 360, 90);
-  // Date value (keep "Date:" label visible — start after it)
-  ctx.fillRect(1115, 625, 320, 90);
+  // Receipt no value (after "Receipt no:" label)
+  ctx.fillRect(740, 635, 320, 80);
+  // Date value (after "Date:" label, stop before green right border ~x:1360)
+  ctx.fillRect(1185, 635, 170, 80);
   // Received from value
-  ctx.fillRect(705, 775, 750, 90);
+  ctx.fillRect(705, 775, 650, 90);
   // Amount value
-  ctx.fillRect(705, 888, 750, 90);
+  ctx.fillRect(705, 888, 650, 90);
   // In words value
-  ctx.fillRect(705, 1000, 750, 90);
+  ctx.fillRect(705, 1000, 650, 90);
 
   const dateFmt = new Date(r.donation_date).toLocaleDateString('en-GB', {
     day: '2-digit', month: '2-digit', year: '2-digit',
@@ -136,9 +137,9 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
   }).format(r.amount);
 
   // Receipt number (red, bold)
-  drawFit(ctx, r.receipt_number, 470, 695, 340, 54, '800', '#b91c1c');
+  drawFit(ctx, r.receipt_number, 755, 698, 300, 50, '800', '#b91c1c');
   // Date (black)
-  drawFit(ctx, dateFmt, 1130, 695, 310, 48, '500', '#111111');
+  drawFit(ctx, dateFmt, 1195, 698, 160, 44, '500', '#111111');
   // Donor name
   drawFit(ctx, r.donor_name, 720, 845, 730, 50, '700', '#111111');
   // Amount (green, bold)
