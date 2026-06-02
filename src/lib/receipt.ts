@@ -121,8 +121,9 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
   // Receipt no value: template's "00012" sits at x~517-652. Cover that area,
   // but stop well before the "Date:" label that starts at x~1023.
   ctx.fillRect(510, 635, 480, 80);
-  // Date value: template's "19/05/26" sits at x~1189-1410. "Date:" label ends ~x:1170.
-  ctx.fillRect(1180, 635, 235, 80);
+  // Date value: template's "19/05/26" sits at x~1160-1335. "Date:" label ends ~x:1135.
+  // Green border is at x~1407, so stop white fill before it.
+  ctx.fillRect(1145, 625, 255, 100);
   // Received from value
   ctx.fillRect(705, 775, 650, 90);
   // Amount value
@@ -139,8 +140,8 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
 
   // Receipt number (red, bold) — aligned where template's "00012" was
   drawFit(ctx, r.receipt_number, 520, 698, 460, 50, '800', '#b91c1c');
-  // Date (black)
-  drawFit(ctx, dateFmt, 1185, 698, 225, 44, '500', '#111111');
+  // Date (black) — left-aligned right after "Date:" label, before green border
+  drawFit(ctx, dateFmt, 1150, 698, 245, 44, '500', '#111111');
   // Donor name
   drawFit(ctx, r.donor_name, 720, 845, 730, 50, '700', '#111111');
   // Amount (green, bold)
