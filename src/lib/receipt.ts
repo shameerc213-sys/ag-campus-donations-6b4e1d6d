@@ -140,8 +140,8 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
 
   // Receipt number (red, bold) — aligned where template's "00012" was
   drawFit(ctx, r.receipt_number, 520, 698, 460, 50, '800', '#b91c1c');
-  // Date (black) — left-aligned starting right after "Date:" label
-  drawFit(ctx, dateFmt, 1120, 698, 315, 44, '500', '#111111');
+  // Date (black) — left-aligned right after "Date:" label, before green border
+  drawFit(ctx, dateFmt, 1150, 698, 245, 44, '500', '#111111');
   // Donor name
   drawFit(ctx, r.donor_name, 720, 845, 730, 50, '700', '#111111');
   // Amount (green, bold)
