@@ -121,9 +121,9 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
   // Receipt no value: template's "00012" sits at x~517-652. Cover that area,
   // but stop well before the "Date:" label that starts at x~1023.
   ctx.fillRect(510, 635, 480, 80);
-  // Date value: template's "19/05/26" sits at x~1120-1420. "Date:" label ends ~x:1110.
-  // Green border is at ~x:1450, so stop white fill before it.
-  ctx.fillRect(1115, 625, 325, 100);
+  // Date value: template's "19/05/26" sits at x~1160-1335. "Date:" label ends ~x:1135.
+  // Green border is at x~1407, so stop white fill before it.
+  ctx.fillRect(1145, 625, 255, 100);
   // Received from value
   ctx.fillRect(705, 775, 650, 90);
   // Amount value
