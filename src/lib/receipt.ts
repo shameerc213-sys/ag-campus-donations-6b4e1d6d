@@ -164,19 +164,6 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
       console.warn('signature load failed', e);
     }
   }
-  if (org.seal_url) {
-    try {
-      const seal = await loadImage(org.seal_url);
-      const boxW = 320, boxH = 200;
-      const cx = 450, cy = 1500;
-      const ratio = Math.min(boxW / seal.naturalWidth, boxH / seal.naturalHeight);
-      const w = seal.naturalWidth * ratio;
-      const h = seal.naturalHeight * ratio;
-      ctx.drawImage(seal, cx - w / 2, cy - h, w, h);
-    } catch (e) {
-      console.warn('seal load failed', e);
-    }
-  }
 
   return canvas;
 }
