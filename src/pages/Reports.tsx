@@ -215,20 +215,43 @@ const Reports = () => {
               {reportData.donations.map((donation) => (
                 <div
                   key={donation.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                       <IndianRupee className="w-4 h-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{donation.donor_name}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{donation.donor_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
+                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')} · {donation.receipt_number}
                       </p>
                     </div>
                   </div>
-                  <p className="font-bold text-primary">{formatCurrency(donation.amount)}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <p className="font-bold text-primary">{formatCurrency(donation.amount)}</p>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await downloadReceipt({
+                            receipt_number: donation.receipt_number,
+                            donor_name: donation.donor_name,
+                            donor_phone: donation.donor_phone,
+                            amount: donation.amount,
+                            donation_date: donation.donation_date,
+                            notes: donation.notes,
+                          });
+                        } catch (e: any) {
+                          toast({ title: 'Error', description: e.message, variant: 'destructive' });
+                        }
+                      }}
+                      title="PDF ഡൗൺലോഡ്"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
