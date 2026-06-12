@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { IndianRupee, Calendar, TrendingUp, Download } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { downloadReceipt } from '@/lib/receipt';
+import { downloadReceipt, loadOrgInfo } from '@/lib/receipt';
 import { useToast } from '@/hooks/use-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportData {
   total: number;
@@ -111,6 +113,67 @@ const Reports = () => {
     }).format(amount);
   };
 
+  const downloadReportPDF = async () => {
+    try {
+      const org = await loadOrgInfo();
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      let y = 40;
+
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text((org as any).org_name || 'Donation Report', pageW / 2, y, { align: 'center' });
+      y += 22;
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Donation Report', pageW / 2, y, { align: 'center' });
+      y += 18;
+      pdf.setFontSize(10);
+      pdf.text(
+        `Period: ${format(new Date(startDate), 'dd/MM/yyyy')}  to  ${format(new Date(endDate), 'dd/MM/yyyy')}`,
+        pageW / 2,
+        y,
+        { align: 'center' },
+      );
+      y += 14;
+      pdf.text(
+        `Total: ${formatCurrency(reportData.total)}   |   Donations: ${reportData.count}`,
+        pageW / 2,
+        y,
+        { align: 'center' },
+      );
+      y += 10;
+
+      autoTable(pdf, {
+        startY: y + 8,
+        head: [['#', 'Date', 'Receipt No', 'Name', 'Phone', 'Amount (OMR)']],
+        body: reportData.donations.map((d, i) => [
+          String(i + 1),
+          format(new Date(d.donation_date), 'dd/MM/yyyy'),
+          d.receipt_number,
+          d.donor_name,
+          d.donor_phone || '-',
+          d.amount.toFixed(3),
+        ]),
+        foot: [[
+          '', '', '', '', 'Total',
+          reportData.total.toFixed(3),
+        ]],
+        styles: { fontSize: 9, cellPadding: 5 },
+        headStyles: { fillColor: [16, 122, 87] },
+        footStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          5: { halign: 'right' },
+        },
+      });
+
+      pdf.save(`Donation_Report_${startDate}_to_${endDate}.pdf`);
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-foreground">റിപ്പോർട്ടുകൾ</h2>
@@ -194,6 +257,14 @@ const Reports = () => {
               </p>
             </div>
           </div>
+          <Button
+            className="w-full mt-4"
+            onClick={downloadReportPDF}
+            disabled={reportData.count === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            റിപ്പോർട്ട് PDF ഡൗൺലോഡ് ചെയ്യുക
+          </Button>
         </CardContent>
       </Card>
 
