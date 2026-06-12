@@ -149,6 +149,35 @@ async function renderReceiptCanvas(r: ReceiptData): Promise<HTMLCanvasElement> {
   // In words
   drawFit(ctx, amountInWords(r.amount), 720, 1070, 730, 44, '500', '#111111');
 
+  // Organizer signature (right side, above the signature line)
+  const org = await loadOrgInfo();
+  if (org.signature_url) {
+    try {
+      const sig = await loadImage(org.signature_url);
+      const boxW = 380, boxH = 160;
+      const cx = 1100, cy = 1500; // center of signature area, above the line
+      const ratio = Math.min(boxW / sig.naturalWidth, boxH / sig.naturalHeight);
+      const w = sig.naturalWidth * ratio;
+      const h = sig.naturalHeight * ratio;
+      ctx.drawImage(sig, cx - w / 2, cy - h, w, h);
+    } catch (e) {
+      console.warn('signature load failed', e);
+    }
+  }
+  if (org.seal_url) {
+    try {
+      const seal = await loadImage(org.seal_url);
+      const boxW = 320, boxH = 200;
+      const cx = 450, cy = 1500;
+      const ratio = Math.min(boxW / seal.naturalWidth, boxH / seal.naturalHeight);
+      const w = seal.naturalWidth * ratio;
+      const h = seal.naturalHeight * ratio;
+      ctx.drawImage(seal, cx - w / 2, cy - h, w, h);
+    } catch (e) {
+      console.warn('seal load failed', e);
+    }
+  }
+
   return canvas;
 }
 
