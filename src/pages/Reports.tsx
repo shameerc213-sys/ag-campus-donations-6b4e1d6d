@@ -17,6 +17,9 @@ interface ReportData {
     amount: number;
     donation_date: string;
     donor_name: string;
+    donor_phone?: string | null;
+    receipt_number: string;
+    notes?: string | null;
   }>;
 }
 
