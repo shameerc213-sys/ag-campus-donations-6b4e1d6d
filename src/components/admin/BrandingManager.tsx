@@ -152,30 +152,6 @@ const BrandingManager = () => {
         </div>
 
         <div className="space-y-2">
-          <Label className="flex items-center gap-2"><Phone className="w-4 h-4" />അധിക ഫോൺ നമ്പർ (റസീറ്റിൽ കാണിക്കും)</Label>
-          <div className="flex gap-2">
-            <Input
-              placeholder="+91 99619 05848"
-              value={values.org_phone2}
-              onChange={(e) => setValues(prev => ({ ...prev, org_phone2: e.target.value }))}
-            />
-            <Button onClick={savePhone2} disabled={savingPhone}>സേവ്</Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2"><FileText className="w-4 h-4" />ഉപശീർഷകം (Run by)</Label>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Run by: ..."
-              value={values.org_subtitle}
-              onChange={(e) => setValues(prev => ({ ...prev, org_subtitle: e.target.value }))}
-            />
-            <Button onClick={async () => { await upsert('org_subtitle', values.org_subtitle.trim()); toast({ title: 'സേവ് ചെയ്തു' }); }}>സേവ്</Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
           <Label className="flex items-center gap-2"><List className="w-4 h-4" />സംരംഭങ്ങൾ (റസീറ്റിന്റെ താഴെ കാണിക്കും)</Label>
           <div className="flex gap-2">
             <Textarea
