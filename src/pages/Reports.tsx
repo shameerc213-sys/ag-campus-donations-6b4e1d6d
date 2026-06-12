@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { IndianRupee, Calendar, TrendingUp } from 'lucide-react';
+import { IndianRupee, Calendar, TrendingUp, Download } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { downloadReceipt } from '@/lib/receipt';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReportData {
   total: number;
