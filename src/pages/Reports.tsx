@@ -28,6 +28,7 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [reportData, setReportData] = useState<ReportData>({ total: 0, count: 0, donations: [] });
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReport();
