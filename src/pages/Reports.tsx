@@ -257,6 +257,14 @@ const Reports = () => {
               </p>
             </div>
           </div>
+          <Button
+            className="w-full mt-4"
+            onClick={downloadReportPDF}
+            disabled={reportData.count === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            റിപ്പോർട്ട് PDF ഡൗൺലോഡ് ചെയ്യുക
+          </Button>
         </CardContent>
       </Card>
 
