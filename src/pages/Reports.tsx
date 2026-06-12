@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { IndianRupee, Calendar, TrendingUp } from 'lucide-react';
+import { IndianRupee, Calendar, TrendingUp, Download } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { downloadReceipt } from '@/lib/receipt';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReportData {
   total: number;
@@ -15,6 +17,9 @@ interface ReportData {
     amount: number;
     donation_date: string;
     donor_name: string;
+    donor_phone?: string | null;
+    receipt_number: string;
+    notes?: string | null;
   }>;
 }
 
@@ -23,6 +28,7 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [reportData, setReportData] = useState<ReportData>({ total: 0, count: 0, donations: [] });
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReport();
@@ -37,7 +43,9 @@ const Reports = () => {
           id,
           amount,
           donation_date,
-          donors (name)
+          receipt_number,
+          notes,
+          donors (name, phone)
         `)
         .gte('donation_date', startDate)
         .lte('donation_date', endDate)
@@ -48,6 +56,9 @@ const Reports = () => {
         amount: Number(d.amount),
         donation_date: d.donation_date,
         donor_name: (d.donors as any)?.name || 'Unknown',
+        donor_phone: (d.donors as any)?.phone || null,
+        receipt_number: d.receipt_number || '',
+        notes: d.notes || null,
       })) || [];
 
       const total = donations.reduce((sum, d) => sum + d.amount, 0);
@@ -205,20 +216,43 @@ const Reports = () => {
               {reportData.donations.map((donation) => (
                 <div
                   key={donation.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                       <IndianRupee className="w-4 h-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">{donation.donor_name}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground truncate">{donation.donor_name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')}
+                        {format(new Date(donation.donation_date), 'dd/MM/yyyy')} · {donation.receipt_number}
                       </p>
                     </div>
                   </div>
-                  <p className="font-bold text-primary">{formatCurrency(donation.amount)}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <p className="font-bold text-primary">{formatCurrency(donation.amount)}</p>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await downloadReceipt({
+                            receipt_number: donation.receipt_number,
+                            donor_name: donation.donor_name,
+                            donor_phone: donation.donor_phone,
+                            amount: donation.amount,
+                            donation_date: donation.donation_date,
+                            notes: donation.notes,
+                          });
+                        } catch (e: any) {
+                          toast({ title: 'Error', description: e.message, variant: 'destructive' });
+                        }
+                      }}
+                      title="PDF ഡൗൺലോഡ്"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
