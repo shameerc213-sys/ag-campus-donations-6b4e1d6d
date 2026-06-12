@@ -42,7 +42,9 @@ const Reports = () => {
           id,
           amount,
           donation_date,
-          donors (name)
+          receipt_number,
+          notes,
+          donors (name, phone)
         `)
         .gte('donation_date', startDate)
         .lte('donation_date', endDate)
@@ -53,6 +55,9 @@ const Reports = () => {
         amount: Number(d.amount),
         donation_date: d.donation_date,
         donor_name: (d.donors as any)?.name || 'Unknown',
+        donor_phone: (d.donors as any)?.phone || null,
+        receipt_number: d.receipt_number || '',
+        notes: d.notes || null,
       })) || [];
 
       const total = donations.reduce((sum, d) => sum + d.amount, 0);
