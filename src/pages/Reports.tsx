@@ -30,7 +30,20 @@ const Reports = () => {
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [reportData, setReportData] = useState<ReportData>({ total: 0, count: 0, donations: [] });
   const [loading, setLoading] = useState(false);
+  const [weekStartDay, setWeekStartDay] = useState<0 | 1 | 2 | 3 | 4 | 5 | 6>(0);
   const { toast } = useToast();
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('organization_settings')
+        .select('value')
+        .eq('key', 'week_start_day')
+        .maybeSingle();
+      const n = Number(data?.value ?? 0);
+      if (!isNaN(n) && n >= 0 && n <= 6) setWeekStartDay(n as 0 | 1 | 2 | 3 | 4 | 5 | 6);
+    })();
+  }, []);
 
   useEffect(() => {
     fetchReport();
@@ -86,8 +99,8 @@ const Reports = () => {
         setEndDate(todayStr);
         break;
       case 'week':
-        setStartDate(format(startOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
-        setEndDate(format(endOfWeek(today, { weekStartsOn: 0 }), 'yyyy-MM-dd'));
+        setStartDate(format(startOfWeek(today, { weekStartsOn: weekStartDay }), 'yyyy-MM-dd'));
+        setEndDate(format(endOfWeek(today, { weekStartsOn: weekStartDay }), 'yyyy-MM-dd'));
         break;
       case 'month':
         setStartDate(format(startOfMonth(today), 'yyyy-MM-dd'));

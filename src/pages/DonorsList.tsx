@@ -4,8 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, User, IndianRupee, Download, MapPin, Layers, ChevronDown, ChevronRight } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Search, User, IndianRupee, Download, MapPin, Layers, ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 interface Donor {
   id: string;
@@ -28,6 +39,7 @@ const currentMonth = () => {
 };
 
 const UNGROUPED = '__ungrouped__';
+const ALL = '__all__';
 
 const DonorsList = () => {
   const [donors, setDonors] = useState<Donor[]>([]);
@@ -38,6 +50,14 @@ const DonorsList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [clusterFilter, setClusterFilter] = useState<string>(ALL);
+  const [subClusterFilter, setSubClusterFilter] = useState<string>(ALL);
+  const [addingFor, setAddingFor] = useState<Donor | null>(null);
+  const [donAmount, setDonAmount] = useState('');
+  const [donDate, setDonDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [donNotes, setDonNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
   const month = currentMonth();
 
   useEffect(() => { fetchAll(); }, []);
@@ -87,9 +107,23 @@ const DonorsList = () => {
     [clusters, monthOrders]
   );
 
+  const availableSubClusters = useMemo(() => {
+    if (clusterFilter === ALL) return [];
+    if (clusterFilter === UNGROUPED) return [];
+    return subClusters.filter(s => s.cluster_id === clusterFilter).sort((a, b) => a.sort_order - b.sort_order);
+  }, [clusterFilter, subClusters]);
+
   const filteredDonors = useMemo(() => {
     const q = searchQuery.toLowerCase();
     return donors
+      .filter(d => {
+        if (clusterFilter === ALL) return true;
+        if (clusterFilter === UNGROUPED) return !d.cluster_id;
+        if (d.cluster_id !== clusterFilter) return false;
+        if (subClusterFilter === ALL) return true;
+        if (subClusterFilter === UNGROUPED) return !d.sub_cluster_id;
+        return d.sub_cluster_id === subClusterFilter;
+      })
       .filter(d => filter === 'all' ? true : filter === 'paid' ? d.paid_this_month : !d.paid_this_month)
       .filter(d =>
         !q ||
@@ -97,7 +131,7 @@ const DonorsList = () => {
         (d.phone && d.phone.includes(searchQuery)) ||
         (d.address && d.address.toLowerCase().includes(q))
       );
-  }, [donors, filter, searchQuery]);
+  }, [donors, filter, searchQuery, clusterFilter, subClusterFilter]);
 
   const paidCount = donors.filter(d => d.paid_this_month).length;
   const unpaidCount = donors.length - paidCount;
@@ -124,6 +158,41 @@ const DonorsList = () => {
 
   const toggleCollapse = (key: string) => setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const openAdd = (d: Donor, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAddingFor(d);
+    setDonAmount('');
+    setDonDate(format(new Date(), 'yyyy-MM-dd'));
+    setDonNotes('');
+  };
+
+  const submitDonation = async () => {
+    if (!addingFor) return;
+    const amount = parseFloat(donAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({ title: 'Error', description: 'തുക 0-ൽ കൂടുതൽ ആയിരിക്കണം', variant: 'destructive' });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('donations').insert({
+        donor_id: addingFor.id,
+        amount,
+        donation_date: donDate,
+        notes: donNotes.trim() || null,
+      });
+      if (error) throw error;
+      toast({ title: 'വിജയകരം!', description: 'സംഭാവന രേഖപ്പെടുത്തി' });
+      setAddingFor(null);
+      fetchAll();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const downloadFilteredList = () => {
     if (filteredDonors.length === 0) return;
     const rows: string[][] = [['ക്ലസ്റ്റർ', 'സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
@@ -147,35 +216,48 @@ const DonorsList = () => {
   };
 
   const DonorRow = ({ d }: { d: Donor }) => (
-    <Link to={`/donor/${d.id}`}>
-      <Card className={`hover:shadow-md transition-shadow cursor-pointer border-l-4 ${d.paid_this_month ? 'border-l-secondary' : 'border-l-primary'}`}>
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                <User className="w-4 h-4 text-primary" />
+    <div className="relative">
+      <Link to={`/donor/${d.id}`}>
+        <Card className={`hover:shadow-md transition-shadow cursor-pointer border-l-4 ${d.paid_this_month ? 'border-l-secondary' : 'border-l-primary'}`}>
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground truncate">{d.name}</p>
+                  {d.phone && <p className="text-xs text-muted-foreground">{d.phone}</p>}
+                  {d.address && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                      <MapPin className="w-3 h-3" />{d.address}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-foreground truncate">{d.name}</p>
-                {d.phone && <p className="text-xs text-muted-foreground">{d.phone}</p>}
-                {d.address && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                    <MapPin className="w-3 h-3" />{d.address}
-                  </p>
-                )}
+              <div className="text-right shrink-0 flex items-center gap-2">
+                <div>
+                  <div className="flex items-center gap-1 text-primary font-bold">
+                    <IndianRupee className="w-4 h-4" />
+                    <span>{formatCurrency(d.total_donations)}</span>
+                  </div>
+                  {d.paid_this_month && <p className="text-[10px] text-secondary font-semibold">തന്നു</p>}
+                </div>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 shrink-0"
+                  onClick={(e) => openAdd(d, e)}
+                  title="സംഭാവന ചേർക്കുക"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <div className="flex items-center gap-1 text-primary font-bold">
-                <IndianRupee className="w-4 h-4" />
-                <span>{formatCurrency(d.total_donations)}</span>
-              </div>
-              {d.paid_this_month && <p className="text-[10px] text-secondary font-semibold">തന്നു</p>}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
+          </CardContent>
+        </Card>
+      </Link>
+    </div>
   );
 
   if (loading) {
@@ -200,6 +282,35 @@ const DonorsList = () => {
             className="pl-10"
           />
         </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Select
+            value={clusterFilter}
+            onValueChange={(v) => { setClusterFilter(v); setSubClusterFilter(ALL); }}
+          >
+            <SelectTrigger><SelectValue placeholder="ക്ലസ്റ്റർ" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>എല്ലാ ക്ലസ്റ്റർ</SelectItem>
+              {orderedClusters.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              <SelectItem value={UNGROUPED}>മറ്റുള്ളവർ</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={subClusterFilter}
+            onValueChange={setSubClusterFilter}
+            disabled={clusterFilter === ALL || clusterFilter === UNGROUPED || availableSubClusters.length === 0}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={availableSubClusters.length ? "സബ് ക്ലസ്റ്റർ" : "—"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>എല്ലാ സബ് ക്ലസ്റ്റർ</SelectItem>
+              {availableSubClusters.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              <SelectItem value={UNGROUPED}>മറ്റുള്ളവർ</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)}>
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="all">എല്ലാവരും ({donors.length})</TabsTrigger>
@@ -267,6 +378,53 @@ const DonorsList = () => {
           })}
         </div>
       )}
+
+      <Dialog open={!!addingFor} onOpenChange={(o) => !o && setAddingFor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>സംഭാവന ചേർക്കുക — {addingFor?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="don-amount">തുക (OMR)</Label>
+              <Input
+                id="don-amount"
+                type="number"
+                step="0.001"
+                min="0"
+                value={donAmount}
+                onChange={(e) => setDonAmount(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="don-date">തീയതി</Label>
+              <Input
+                id="don-date"
+                type="date"
+                value={donDate}
+                onChange={(e) => setDonDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="don-notes">കുറിപ്പ് (ഓപ്ഷണൽ)</Label>
+              <Input
+                id="don-notes"
+                value={donNotes}
+                onChange={(e) => setDonNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddingFor(null)} disabled={submitting}>
+              റദ്ദാക്കുക
+            </Button>
+            <Button onClick={submitDonation} disabled={submitting}>
+              {submitting ? 'സേവ് ചെയ്യുന്നു...' : 'സേവ് ചെയ്യുക'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

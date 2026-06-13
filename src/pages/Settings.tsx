@@ -39,7 +39,10 @@ interface OrgSettings {
   default_language: string;
   assistant_username: string;
   assistant_password: string;
+  week_start_day: string;
 }
+
+const DAY_NAMES_ML = ['ഞായർ', 'തിങ്കൾ', 'ചൊവ്വ', 'ബുധൻ', 'വ്യാഴം', 'വെള്ളി', 'ശനി'];
 
 interface MediaItem {
   id: string;
@@ -62,6 +65,7 @@ const Settings = () => {
     default_language: 'ml',
     assistant_username: 'assistant',
     assistant_password: 'assistant123',
+    week_start_day: '0',
   });
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -579,6 +583,23 @@ const Settings = () => {
                   <option value="ml">മലയാളം</option>
                   <option value="en">English</option>
                 </select>
+              </div>
+
+              <div className="border-t pt-4 mt-4 space-y-2">
+                <Label htmlFor="week_start_day">റിപ്പോർട്ടിലെ ആഴ്ചയുടെ തുടക്കം</Label>
+                <select
+                  id="week_start_day"
+                  value={settings.week_start_day}
+                  onChange={(e) => setSettings(prev => ({ ...prev, week_start_day: e.target.value }))}
+                  className="w-full h-10 px-3 py-2 rounded-md border border-input bg-background"
+                >
+                  {DAY_NAMES_ML.map((n, i) => (
+                    <option key={i} value={String(i)}>{n}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  ആഴ്ച അവസാനിക്കുന്നത്: {DAY_NAMES_ML[(Number(settings.week_start_day) + 6) % 7]}
+                </p>
               </div>
 
               <Button onClick={handleSaveSettings} disabled={saving}>
