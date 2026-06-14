@@ -193,6 +193,9 @@ const DonorsList = () => {
     }
   };
 
+  const toCSV = (rows: string[][]) =>
+    rows.map(r => r.map(c => `"${(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+
   const downloadFilteredList = () => {
     if (filteredDonors.length === 0) return;
     const rows: string[][] = [['ക്ലസ്റ്റർ', 'സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
@@ -207,11 +210,41 @@ const DonorsList = () => {
         });
       });
     });
-    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\ufeff' + toCSV(rows)], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `donors_${filter}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const sanitize = (s: string) => s.replace(/[\\/:*?"<>|]/g, '_').trim() || 'unnamed';
+
+  const downloadPerCluster = async () => {
+    if (filteredDonors.length === 0) return;
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    let added = 0;
+    groups.forEach(g => {
+      const rows: string[][] = [['സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
+      g.subs.forEach(s => {
+        s.donors.forEach(d => {
+          rows.push([
+            s.sub?.name || '',
+            d.name, d.phone || '', d.address || '', String(d.total_donations),
+          ]);
+        });
+      });
+      if (rows.length > 1) {
+        const name = sanitize(g.cluster?.name || 'Ungrouped');
+        zip.file(`${name}.csv`, '\ufeff' + toCSV(rows));
+        added++;
+      }
+    });
+    if (added === 0) return;
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `donors_by_cluster_${new Date().toISOString().split('T')[0]}.zip`;
     link.click();
   };
 
