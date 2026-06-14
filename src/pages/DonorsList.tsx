@@ -351,13 +351,18 @@ const DonorsList = () => {
             <TabsTrigger value="paid">തന്നവർ ({paidCount})</TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex items-center justify-between bg-accent/40 p-2 rounded-lg">
+        <div className="flex items-center justify-between bg-accent/40 p-2 rounded-lg gap-2">
           <span className="text-xs text-muted-foreground">
             {filteredDonors.length} ഫലങ്ങൾ · {month}
           </span>
-          <Button variant="outline" size="sm" onClick={downloadFilteredList} className="flex items-center gap-1">
-            <Download className="w-4 h-4" /> CSV
-          </Button>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={downloadFilteredList} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={downloadPerCluster} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> ക്ലസ്റ്റർ ZIP
+            </Button>
+          </div>
         </div>
       </div>
 
