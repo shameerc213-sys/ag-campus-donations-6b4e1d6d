@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { htmlToPdf, escapeHtml } from '@/lib/htmlPdf';
 
 interface Donor {
   id: string;
@@ -401,11 +402,11 @@ const DonorsList = () => {
             {filteredDonors.length} ഫലങ്ങൾ · {month}
           </span>
           <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={downloadFilteredList} className="flex items-center gap-1">
-              <Download className="w-4 h-4" /> CSV
+            <Button variant="outline" size="sm" onClick={downloadFullPDF} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> പൂർണ്ണ PDF
             </Button>
-            <Button variant="outline" size="sm" onClick={downloadPerCluster} className="flex items-center gap-1">
-              <Download className="w-4 h-4" /> ക്ലസ്റ്റർ ZIP
+            <Button variant="outline" size="sm" onClick={downloadPerClusterPDF} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> ക്ലസ്റ്റർ PDF
             </Button>
           </div>
         </div>
