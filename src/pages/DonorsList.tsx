@@ -193,60 +193,105 @@ const DonorsList = () => {
     }
   };
 
-  const toCSV = (rows: string[][]) =>
-    rows.map(r => r.map(c => `"${(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const formatAmount = (n: number) =>
+    new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(n);
 
-  const downloadFilteredList = () => {
-    if (filteredDonors.length === 0) return;
-    const rows: string[][] = [['ക്ലസ്റ്റർ', 'സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
-    groups.forEach(g => {
-      g.subs.forEach(s => {
-        s.donors.forEach(d => {
-          rows.push([
-            g.cluster?.name || 'Ungrouped',
-            s.sub?.name || '',
-            d.name, d.phone || '', d.address || '', String(d.total_donations),
-          ]);
-        });
-      });
-    });
-    const blob = new Blob(['\ufeff' + toCSV(rows)], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `donors_${filter}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+  const buildListHtml = (perClusterPageBreak: boolean) => {
+    const today = format(new Date(), 'dd/MM/yyyy');
+    const totalAmount = filteredDonors.reduce((s, d) => s + d.total_donations, 0);
+    const filterLabel = filter === 'all' ? 'എല്ലാവരും' : filter === 'paid' ? 'തന്നവർ' : 'ബാക്കിയുള്ളവർ';
+
+    const sections = groups
+      .map((g, gi) => {
+        if (g.subs.length === 0) return '';
+        const clusterTotal = g.subs.reduce(
+          (s, sg) => s + sg.donors.reduce((a, d) => a + d.total_donations, 0),
+          0,
+        );
+        const clusterCount = g.subs.reduce((s, sg) => s + sg.donors.length, 0);
+
+        const subs = g.subs
+          .map(s => {
+            const rows = s.donors
+              .map(
+                (d, i) => `
+                <tr>
+                  <td style="padding:6px 8px;border:1px solid #ddd;text-align:center;">${i + 1}</td>
+                  <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.name)}</td>
+                  <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.phone || '-')}</td>
+                  <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.address || '-')}</td>
+                  <td style="padding:6px 8px;border:1px solid #ddd;text-align:center;">${d.paid_this_month ? 'തന്നു' : 'ബാക്കി'}</td>
+                  <td style="padding:6px 8px;border:1px solid #ddd;text-align:right;">${formatAmount(d.total_donations)}</td>
+                </tr>`,
+              )
+              .join('');
+            const subTotal = s.donors.reduce((a, d) => a + d.total_donations, 0);
+            const subHeader = s.sub
+              ? `<h4 style="margin:14px 0 6px;font-size:14px;color:#444;">${escapeHtml(s.sub.name)} <span style="font-weight:normal;color:#777;">(${s.donors.length})</span></h4>`
+              : g.subs.length > 1
+                ? `<h4 style="margin:14px 0 6px;font-size:14px;color:#444;">മറ്റുള്ളവർ <span style="font-weight:normal;color:#777;">(${s.donors.length})</span></h4>`
+                : '';
+            return `
+              ${subHeader}
+              <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead>
+                  <tr style="background:#f3f4f6;">
+                    <th style="padding:6px 8px;border:1px solid #ddd;width:32px;">#</th>
+                    <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">പേര്</th>
+                    <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">ഫോൺ</th>
+                    <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">വിലാസം</th>
+                    <th style="padding:6px 8px;border:1px solid #ddd;width:60px;">ഈ മാസം</th>
+                    <th style="padding:6px 8px;border:1px solid #ddd;text-align:right;width:100px;">ആകെ (OMR)</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+                <tfoot>
+                  <tr style="background:#fafafa;font-weight:bold;">
+                    <td colspan="5" style="padding:6px 8px;border:1px solid #ddd;text-align:right;">ഉപആകെ</td>
+                    <td style="padding:6px 8px;border:1px solid #ddd;text-align:right;">${formatAmount(subTotal)}</td>
+                  </tr>
+                </tfoot>
+              </table>`;
+          })
+          .join('');
+
+        const pageBreak = perClusterPageBreak && gi > 0 ? 'page-break-before:always;' : '';
+        return `
+          <section style="${pageBreak}margin-top:18px;">
+            <div style="background:#107a57;color:#fff;padding:8px 12px;border-radius:6px;display:flex;justify-content:space-between;">
+              <strong style="font-size:14px;">${escapeHtml(g.cluster?.name || 'മറ്റുള്ളവർ')}</strong>
+              <span style="font-size:12px;">${clusterCount} ദാതാക്കൾ · ആകെ ${formatAmount(clusterTotal)} OMR</span>
+            </div>
+            ${subs}
+          </section>`;
+      })
+      .join('');
+
+    return `
+      <div style="padding:28px 24px;font-size:12px;line-height:1.4;">
+        <div style="text-align:center;border-bottom:2px solid #107a57;padding-bottom:10px;margin-bottom:16px;">
+          <h1 style="margin:0;font-size:20px;color:#107a57;">ദാതാക്കളുടെ ലിസ്റ്റ്</h1>
+          <p style="margin:4px 0 0;font-size:12px;color:#555;">
+            ${filterLabel} · ${filteredDonors.length} ദാതാക്കൾ · ആകെ ${formatAmount(totalAmount)} OMR
+          </p>
+          <p style="margin:2px 0 0;font-size:11px;color:#777;">തയ്യാറാക്കിയത്: ${today}</p>
+        </div>
+        ${sections}
+      </div>`;
   };
 
-  const sanitize = (s: string) => s.replace(/[\\/:*?"<>|]/g, '_').trim() || 'unnamed';
-
-  const downloadPerCluster = async () => {
+  const downloadFullPDF = async () => {
     if (filteredDonors.length === 0) return;
-    const JSZip = (await import('jszip')).default;
-    const zip = new JSZip();
-    let added = 0;
-    groups.forEach(g => {
-      const rows: string[][] = [['സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
-      g.subs.forEach(s => {
-        s.donors.forEach(d => {
-          rows.push([
-            s.sub?.name || '',
-            d.name, d.phone || '', d.address || '', String(d.total_donations),
-          ]);
-        });
-      });
-      if (rows.length > 1) {
-        const name = sanitize(g.cluster?.name || 'Ungrouped');
-        zip.file(`${name}.csv`, '\ufeff' + toCSV(rows));
-        added++;
-      }
-    });
-    if (added === 0) return;
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `donors_by_cluster_${new Date().toISOString().split('T')[0]}.zip`;
-    link.click();
+    const html = buildListHtml(false);
+    await htmlToPdf(html, `ദാതാക്കൾ_${new Date().toISOString().split('T')[0]}.pdf`);
   };
+
+  const downloadPerClusterPDF = async () => {
+    if (filteredDonors.length === 0) return;
+    const html = buildListHtml(true);
+    await htmlToPdf(html, `ദാതാക്കൾ_ക്ലസ്റ്റർ_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
 
   const DonorRow = ({ d }: { d: Donor }) => (
     <div className="relative">
