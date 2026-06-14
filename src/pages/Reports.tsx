@@ -8,8 +8,7 @@ import { IndianRupee, Calendar, TrendingUp, Download } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { downloadReceipt, loadOrgInfo } from '@/lib/receipt';
 import { useToast } from '@/hooks/use-toast';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { htmlToPdf, escapeHtml } from '@/lib/htmlPdf';
 
 interface ReportData {
   total: number;
@@ -128,60 +127,57 @@ const Reports = () => {
 
   const downloadReportPDF = async () => {
     try {
-      const org = await loadOrgInfo();
-      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      let y = 40;
+      const org: any = await loadOrgInfo();
+      const orgName = org?.org_name || 'Ajmeer Gate Campus Karad';
+      const fromStr = format(new Date(startDate), 'dd/MM/yyyy');
+      const toStr = format(new Date(endDate), 'dd/MM/yyyy');
 
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text((org as any).org_name || 'Donation Report', pageW / 2, y, { align: 'center' });
-      y += 22;
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Donation Report', pageW / 2, y, { align: 'center' });
-      y += 18;
-      pdf.setFontSize(10);
-      pdf.text(
-        `Period: ${format(new Date(startDate), 'dd/MM/yyyy')}  to  ${format(new Date(endDate), 'dd/MM/yyyy')}`,
-        pageW / 2,
-        y,
-        { align: 'center' },
-      );
-      y += 14;
-      pdf.text(
-        `Total: ${formatCurrency(reportData.total)}   |   Donations: ${reportData.count}`,
-        pageW / 2,
-        y,
-        { align: 'center' },
-      );
-      y += 10;
+      const rows = reportData.donations
+        .map(
+          (d, i) => `
+          <tr>
+            <td style="padding:6px 8px;border:1px solid #ddd;text-align:center;">${i + 1}</td>
+            <td style="padding:6px 8px;border:1px solid #ddd;">${format(new Date(d.donation_date), 'dd/MM/yyyy')}</td>
+            <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.receipt_number || '-')}</td>
+            <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.donor_name)}</td>
+            <td style="padding:6px 8px;border:1px solid #ddd;">${escapeHtml(d.donor_phone || '-')}</td>
+            <td style="padding:6px 8px;border:1px solid #ddd;text-align:right;">${d.amount.toFixed(3)}</td>
+          </tr>`,
+        )
+        .join('');
 
-      autoTable(pdf, {
-        startY: y + 8,
-        head: [['#', 'Date', 'Receipt No', 'Name', 'Phone', 'Amount (OMR)']],
-        body: reportData.donations.map((d, i) => [
-          String(i + 1),
-          format(new Date(d.donation_date), 'dd/MM/yyyy'),
-          d.receipt_number,
-          d.donor_name,
-          d.donor_phone || '-',
-          d.amount.toFixed(3),
-        ]),
-        foot: [[
-          '', '', '', '', 'Total',
-          reportData.total.toFixed(3),
-        ]],
-        styles: { fontSize: 9, cellPadding: 5 },
-        headStyles: { fillColor: [16, 122, 87] },
-        footStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' },
-        columnStyles: {
-          0: { cellWidth: 30 },
-          5: { halign: 'right' },
-        },
-      });
+      const html = `
+        <div style="padding:28px 24px;font-size:12px;line-height:1.4;">
+          <div style="text-align:center;border-bottom:2px solid #107a57;padding-bottom:10px;margin-bottom:16px;">
+            <h1 style="margin:0;font-size:20px;color:#107a57;">${escapeHtml(orgName)}</h1>
+            <h2 style="margin:6px 0 0;font-size:15px;color:#333;">സംഭാവന റിപ്പോർട്ട്</h2>
+            <p style="margin:6px 0 0;font-size:12px;color:#555;">കാലയളവ്: ${fromStr} മുതൽ ${toStr} വരെ</p>
+            <p style="margin:2px 0 0;font-size:12px;color:#555;">
+              ആകെ: ${reportData.total.toFixed(3)} OMR  ·  സംഭാവനകൾ: ${reportData.count}
+            </p>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:11px;">
+            <thead>
+              <tr style="background:#107a57;color:#fff;">
+                <th style="padding:6px 8px;border:1px solid #ddd;width:32px;">#</th>
+                <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">തീയതി</th>
+                <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">റസീപ്റ്റ് നം.</th>
+                <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">പേര്</th>
+                <th style="padding:6px 8px;border:1px solid #ddd;text-align:left;">ഫോൺ</th>
+                <th style="padding:6px 8px;border:1px solid #ddd;text-align:right;width:100px;">തുക (OMR)</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+            <tfoot>
+              <tr style="background:#f3f4f6;font-weight:bold;">
+                <td colspan="5" style="padding:6px 8px;border:1px solid #ddd;text-align:right;">ആകെ</td>
+                <td style="padding:6px 8px;border:1px solid #ddd;text-align:right;">${reportData.total.toFixed(3)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>`;
 
-      pdf.save(`Donation_Report_${startDate}_to_${endDate}.pdf`);
+      await htmlToPdf(html, `സംഭാവന_റിപ്പോർട്ട്_${startDate}_${endDate}.pdf`);
     } catch (e: any) {
       toast({ title: 'Error', description: e.message, variant: 'destructive' });
     }
