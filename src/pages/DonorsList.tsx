@@ -193,6 +193,9 @@ const DonorsList = () => {
     }
   };
 
+  const toCSV = (rows: string[][]) =>
+    rows.map(r => r.map(c => `"${(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+
   const downloadFilteredList = () => {
     if (filteredDonors.length === 0) return;
     const rows: string[][] = [['ക്ലസ്റ്റർ', 'സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
@@ -207,11 +210,41 @@ const DonorsList = () => {
         });
       });
     });
-    const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\ufeff' + toCSV(rows)], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `donors_${filter}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const sanitize = (s: string) => s.replace(/[\\/:*?"<>|]/g, '_').trim() || 'unnamed';
+
+  const downloadPerCluster = async () => {
+    if (filteredDonors.length === 0) return;
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    let added = 0;
+    groups.forEach(g => {
+      const rows: string[][] = [['സബ് ക്ലസ്റ്റർ', 'പേര്', 'ഫോൺ', 'വിലാസം', 'ആകെ സംഭാവന']];
+      g.subs.forEach(s => {
+        s.donors.forEach(d => {
+          rows.push([
+            s.sub?.name || '',
+            d.name, d.phone || '', d.address || '', String(d.total_donations),
+          ]);
+        });
+      });
+      if (rows.length > 1) {
+        const name = sanitize(g.cluster?.name || 'Ungrouped');
+        zip.file(`${name}.csv`, '\ufeff' + toCSV(rows));
+        added++;
+      }
+    });
+    if (added === 0) return;
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `donors_by_cluster_${new Date().toISOString().split('T')[0]}.zip`;
     link.click();
   };
 
@@ -318,13 +351,18 @@ const DonorsList = () => {
             <TabsTrigger value="paid">തന്നവർ ({paidCount})</TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex items-center justify-between bg-accent/40 p-2 rounded-lg">
+        <div className="flex items-center justify-between bg-accent/40 p-2 rounded-lg gap-2">
           <span className="text-xs text-muted-foreground">
             {filteredDonors.length} ഫലങ്ങൾ · {month}
           </span>
-          <Button variant="outline" size="sm" onClick={downloadFilteredList} className="flex items-center gap-1">
-            <Download className="w-4 h-4" /> CSV
-          </Button>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={downloadFilteredList} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={downloadPerCluster} className="flex items-center gap-1">
+              <Download className="w-4 h-4" /> ക്ലസ്റ്റർ ZIP
+            </Button>
+          </div>
         </div>
       </div>
 

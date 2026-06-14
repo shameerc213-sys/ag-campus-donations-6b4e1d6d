@@ -4,7 +4,7 @@ import { useDonorAuth } from '@/contexts/DonorAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Phone, User } from 'lucide-react';
+import { ArrowLeft, Phone, User, MapPin } from 'lucide-react';
 import PortalHeader from '@/components/portal/PortalHeader';
 import PortalNav from '@/components/portal/PortalNav';
 
@@ -12,7 +12,10 @@ interface Contact {
   id: string;
   name: string;
   designation: string | null;
-  phone: string;
+  phone: string | null;
+  phones: string[];
+  photos: string[];
+  location: string | null;
 }
 
 const DonorContacts = () => {
@@ -38,7 +41,11 @@ const DonorContacts = () => {
         .from('contacts')
         .select('*')
         .order('sort_order', { ascending: true });
-      setContacts(data || []);
+      setContacts(((data || []) as any[]).map(r => ({
+        ...r,
+        phones: Array.isArray(r.phones) && r.phones.length ? r.phones : (r.phone ? [r.phone] : []),
+        photos: Array.isArray(r.photos) ? r.photos : [],
+      })));
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -57,6 +64,11 @@ const DonorContacts = () => {
     } catch (error) {
       console.error('Error:', error);
     }
+  };
+
+  const locationHref = (loc: string) => {
+    if (/^https?:\/\//i.test(loc)) return loc;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
   };
 
   if (loading) {
@@ -83,7 +95,6 @@ const DonorContacts = () => {
           {language === 'ml' ? 'ബന്ധപ്പെടേണ്ട നമ്പറുകൾ' : 'Contact Numbers'}
         </h2>
 
-        {/* FOR ENQUIRIES section */}
         {enquiryPhone && (
           <a
             href={`tel:${enquiryPhone}`}
@@ -110,25 +121,55 @@ const DonorContacts = () => {
         ) : (
           <div className="space-y-3">
             {contacts.map((contact) => (
-              <a
-                key={contact.id}
-                href={`tel:${contact.phone}`}
-                className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors"
-              >
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-foreground">{contact.name}</p>
-                  {contact.designation && (
-                    <p className="text-xs text-muted-foreground">{contact.designation}</p>
+              <div key={contact.id} className="p-4 bg-card border border-border rounded-xl space-y-3">
+                <div className="flex items-center gap-4">
+                  {contact.photos[0] ? (
+                    <img src={contact.photos[0]} alt={contact.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="w-6 h-6 text-primary" />
+                    </div>
                   )}
-                  <p className="text-sm text-primary flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3" />
-                    {contact.phone}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-foreground">{contact.name}</p>
+                    {contact.designation && (
+                      <p className="text-xs text-muted-foreground">{contact.designation}</p>
+                    )}
+                  </div>
                 </div>
-              </a>
+
+                {contact.photos.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto">
+                    {contact.photos.slice(1).map((u, i) => (
+                      <img key={i} src={u} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  {contact.phones.map((p, i) => (
+                    <a
+                      key={i}
+                      href={`tel:${p}`}
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    >
+                      <Phone className="w-4 h-4" />{p}
+                    </a>
+                  ))}
+                </div>
+
+                {contact.location && (
+                  <a
+                    href={locationHref(contact.location)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    <span className="truncate">{contact.location}</span>
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         )}

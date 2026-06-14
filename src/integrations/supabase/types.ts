@@ -43,24 +43,33 @@ export type Database = {
           created_at: string
           designation: string | null
           id: string
+          location: string | null
           name: string
-          phone: string
+          phone: string | null
+          phones: string[]
+          photos: string[]
           sort_order: number | null
         }
         Insert: {
           created_at?: string
           designation?: string | null
           id?: string
+          location?: string | null
           name: string
-          phone: string
+          phone?: string | null
+          phones?: string[]
+          photos?: string[]
           sort_order?: number | null
         }
         Update: {
           created_at?: string
           designation?: string | null
           id?: string
+          location?: string | null
           name?: string
-          phone?: string
+          phone?: string | null
+          phones?: string[]
+          photos?: string[]
           sort_order?: number | null
         }
         Relationships: []
