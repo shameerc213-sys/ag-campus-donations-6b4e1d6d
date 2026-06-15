@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { IndianRupee, Calendar, TrendingUp, Download } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { downloadReceipt, loadOrgInfo } from '@/lib/receipt';
+import { downloadReceipt } from '@/lib/receipt';
 import { useToast } from '@/hooks/use-toast';
 import { htmlToPdf, escapeHtml } from '@/lib/htmlPdf';
 
