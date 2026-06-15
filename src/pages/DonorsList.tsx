@@ -309,9 +309,13 @@ const DonorsList = () => {
           <CardContent className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-                  <User className="w-4 h-4 text-primary" />
-                </div>
+                {d.photos && d.photos[0] ? (
+                  <img src={d.photos[0]} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                )}
                 <div className="min-w-0">
                   <p className="font-semibold text-foreground truncate">{d.name}</p>
                   {d.phone && <p className="text-xs text-muted-foreground">{d.phone}</p>}
