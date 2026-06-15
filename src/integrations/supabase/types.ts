@@ -118,9 +118,11 @@ export type Database = {
           cluster_id: string | null
           created_at: string
           id: string
+          location: string | null
           name: string
           notes: string | null
           phone: string | null
+          photos: string[]
           sub_cluster_id: string | null
           updated_at: string
         }
@@ -129,9 +131,11 @@ export type Database = {
           cluster_id?: string | null
           created_at?: string
           id?: string
+          location?: string | null
           name: string
           notes?: string | null
           phone?: string | null
+          photos?: string[]
           sub_cluster_id?: string | null
           updated_at?: string
         }
@@ -140,9 +144,11 @@ export type Database = {
           cluster_id?: string | null
           created_at?: string
           id?: string
+          location?: string | null
           name?: string
           notes?: string | null
           phone?: string | null
+          photos?: string[]
           sub_cluster_id?: string | null
           updated_at?: string
         }
