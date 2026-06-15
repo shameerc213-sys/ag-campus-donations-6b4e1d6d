@@ -127,8 +127,7 @@ const Reports = () => {
 
   const downloadReportPDF = async () => {
     try {
-      const org: any = await loadOrgInfo();
-      const orgName = org?.org_name || 'Ajmeer Gate Campus Karad';
+      const ORG_HEADING = 'അജ്മീർ ഗേറ്റ് ക്യാമ്പസ് - കാരാട്';
       const fromStr = format(new Date(startDate), 'dd/MM/yyyy');
       const toStr = format(new Date(endDate), 'dd/MM/yyyy');
 
@@ -149,7 +148,7 @@ const Reports = () => {
       const html = `
         <div style="padding:28px 24px;font-size:12px;line-height:1.4;">
           <div style="text-align:center;border-bottom:2px solid #107a57;padding-bottom:10px;margin-bottom:16px;">
-            <h1 style="margin:0;font-size:20px;color:#107a57;">${escapeHtml(orgName)}</h1>
+            <h1 style="margin:0;font-size:20px;color:#107a57;">${escapeHtml(ORG_HEADING)}</h1>
             <h2 style="margin:6px 0 0;font-size:15px;color:#333;">സംഭാവന റിപ്പോർട്ട്</h2>
             <p style="margin:6px 0 0;font-size:12px;color:#555;">കാലയളവ്: ${fromStr} മുതൽ ${toStr} വരെ</p>
             <p style="margin:2px 0 0;font-size:12px;color:#555;">
