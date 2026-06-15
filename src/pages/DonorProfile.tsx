@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { z } from 'zod';
 import ClusterSelect from '@/components/admin/ClusterSelect';
+import DonorMediaFields from '@/components/admin/DonorMediaFields';
 import { downloadReceipt, generateReceiptPDF } from '@/lib/receipt';
 
 interface Donor {
@@ -22,6 +23,8 @@ interface Donor {
   created_at: string;
   cluster_id: string | null;
   sub_cluster_id: string | null;
+  photos: string[];
+  location: string | null;
 }
 
 interface Donation {
@@ -62,6 +65,8 @@ const DonorProfile = () => {
   const [editDonorNotes, setEditDonorNotes] = useState('');
   const [editClusterId, setEditClusterId] = useState<string | null>(null);
   const [editSubClusterId, setEditSubClusterId] = useState<string | null>(null);
+  const [editPhotos, setEditPhotos] = useState<string[]>([]);
+  const [editLocation, setEditLocation] = useState('');
   const [busyReceipt, setBusyReceipt] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -113,7 +118,11 @@ const DonorProfile = () => {
         return;
       }
 
-      setDonor(donorData);
+      setDonor({
+        ...donorData,
+        photos: Array.isArray((donorData as any).photos) ? (donorData as any).photos : [],
+        location: (donorData as any).location ?? null,
+      } as Donor);
 
       // Fetch donations
       const { data: donationsData } = await supabase
@@ -294,6 +303,8 @@ const DonorProfile = () => {
       setEditDonorNotes(donor.notes || '');
       setEditClusterId(donor.cluster_id);
       setEditSubClusterId(donor.sub_cluster_id);
+      setEditPhotos(donor.photos || []);
+      setEditLocation(donor.location || '');
       setEditingDonor(true);
     }
   };
@@ -327,7 +338,9 @@ const DonorProfile = () => {
           notes: editDonorNotes.trim() || null,
           cluster_id: editClusterId,
           sub_cluster_id: editSubClusterId,
-        })
+          photos: editPhotos,
+          location: editLocation.trim() || null,
+        } as any)
         .eq('id', donor.id);
 
       if (error) throw error;
@@ -445,6 +458,12 @@ const DonorProfile = () => {
                 subClusterId={editSubClusterId}
                 onChange={(c, s) => { setEditClusterId(c); setEditSubClusterId(s); }}
               />
+              <DonorMediaFields
+                photos={editPhotos}
+                location={editLocation}
+                onPhotosChange={setEditPhotos}
+                onLocationChange={setEditLocation}
+              />
               <div className="space-y-2">
                 <Label htmlFor="donor-notes">കുറിപ്പുകൾ</Label>
                 <Input
@@ -482,6 +501,23 @@ const DonorProfile = () => {
                       <MapPin className="w-3 h-3" />
                       {donor.address}
                     </p>
+                  )}
+                  {donor.location && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                      <MapPin className="w-3 h-3" />
+                      {donor.location.startsWith('http') ? (
+                        <a href={donor.location} target="_blank" rel="noreferrer" className="underline">ലൊക്കേഷൻ</a>
+                      ) : donor.location}
+                    </p>
+                  )}
+                  {donor.photos && donor.photos.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {donor.photos.map((u, i) => (
+                        <a key={i} href={u} target="_blank" rel="noreferrer">
+                          <img src={u} alt="" className="w-14 h-14 object-cover rounded border" />
+                        </a>
+                      ))}
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-1">

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus } from 'lucide-react';
 import { z } from 'zod';
 import ClusterSelect from '@/components/admin/ClusterSelect';
+import DonorMediaFields from '@/components/admin/DonorMediaFields';
 
 const donorSchema = z.object({
   name: z.string().trim().min(1, 'പേര് നൽകുക').max(100, 'പേര് വളരെ നീളമുള്ളതാണ്'),
@@ -25,6 +26,8 @@ const AddDonor = () => {
   const [notes, setNotes] = useState('');
   const [clusterId, setClusterId] = useState<string | null>(null);
   const [subClusterId, setSubClusterId] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,7 +50,9 @@ const AddDonor = () => {
           notes: notes.trim() || null,
           cluster_id: clusterId,
           sub_cluster_id: subClusterId,
-        })
+          photos,
+          location: location.trim() || null,
+        } as any)
         .select()
         .single();
       if (error) throw error;
@@ -85,6 +90,13 @@ const AddDonor = () => {
               <Label htmlFor="address">വിലാസം</Label>
               <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="വിലാസം" rows={2} />
             </div>
+
+            <DonorMediaFields
+              photos={photos}
+              location={location}
+              onPhotosChange={setPhotos}
+              onLocationChange={setLocation}
+            />
 
             <ClusterSelect
               clusterId={clusterId}
