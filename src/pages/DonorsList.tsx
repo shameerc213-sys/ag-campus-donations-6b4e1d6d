@@ -409,14 +409,50 @@ const DonorsList = () => {
           <span className="text-xs text-muted-foreground">
             {filteredDonors.length} ഫലങ്ങൾ · {month}
           </span>
-          <div className="flex gap-1">
-            <Button variant="outline" size="sm" onClick={downloadFullPDF} className="flex items-center gap-1">
-              <Download className="w-4 h-4" /> പൂർണ്ണ PDF
-            </Button>
-            <Button variant="outline" size="sm" onClick={downloadPerClusterPDF} className="flex items-center gap-1">
-              <Download className="w-4 h-4" /> ക്ലസ്റ്റർ PDF
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Download className="w-4 h-4" /> ഡൗൺലോഡ്
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-h-[60vh] overflow-y-auto w-64 bg-popover">
+              <DropdownMenuItem onClick={() => downloadScope({ type: 'all' })}>
+                എല്ലാ ദാതാക്കൾ ({donors.length})
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>ക്ലസ്റ്റർ തിരഞ്ഞെടുക്കുക</DropdownMenuLabel>
+              {orderedClusters.map(c => {
+                const subs = subClusters.filter(s => s.cluster_id === c.id);
+                if (subs.length === 0) {
+                  return (
+                    <DropdownMenuItem key={c.id} onClick={() => downloadScope({ type: 'cluster', id: c.id })}>
+                      {c.name}
+                    </DropdownMenuItem>
+                  );
+                }
+                return (
+                  <DropdownMenuSub key={c.id}>
+                    <DropdownMenuSubTrigger>{c.name}</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="bg-popover max-h-[60vh] overflow-y-auto">
+                      <DropdownMenuItem onClick={() => downloadScope({ type: 'cluster', id: c.id })}>
+                        പൂർണ്ണ ക്ലസ്റ്റർ
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>സബ് ക്ലസ്റ്റർ</DropdownMenuLabel>
+                      {subs.map(s => (
+                        <DropdownMenuItem
+                          key={s.id}
+                          onClick={() => downloadScope({ type: 'sub', id: s.id, clusterId: c.id })}
+                        >
+                          {s.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
