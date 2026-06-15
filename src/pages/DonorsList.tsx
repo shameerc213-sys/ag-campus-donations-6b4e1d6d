@@ -9,6 +9,17 @@ import { Search, User, IndianRupee, Download, MapPin, Layers, ChevronDown, Chevr
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -26,6 +37,8 @@ interface Donor {
   address: string | null;
   cluster_id: string | null;
   sub_cluster_id: string | null;
+  photos: string[];
+  location: string | null;
   total_donations: number;
   paid_this_month: boolean;
 }
@@ -66,7 +79,7 @@ const DonorsList = () => {
   const fetchAll = async () => {
     try {
       const [donorsRes, clustersRes, subsRes, ordersRes] = await Promise.all([
-        supabase.from('donors').select('id, name, phone, address, cluster_id, sub_cluster_id').order('name'),
+        supabase.from('donors').select('id, name, phone, address, cluster_id, sub_cluster_id, photos, location').order('name'),
         supabase.from('clusters').select('*').order('sort_order'),
         supabase.from('sub_clusters').select('*').order('sort_order'),
         supabase.from('monthly_cluster_orders').select('*').eq('month', month),
@@ -85,7 +98,13 @@ const DonorsList = () => {
             .eq('donor_id', d.id);
           const total = ds?.reduce((s, x) => s + Number(x.amount), 0) || 0;
           const paid = !!ds?.some(x => x.donation_date >= monthStart && x.donation_date < monthEnd);
-          return { ...d, total_donations: total, paid_this_month: paid } as Donor;
+          return {
+            ...d,
+            photos: Array.isArray(d.photos) ? d.photos : [],
+            location: d.location ?? null,
+            total_donations: total,
+            paid_this_month: paid,
+          } as Donor;
         })
       );
 
