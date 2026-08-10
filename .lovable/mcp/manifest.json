@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://sdbescoppznbzwuhdnap.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "ajmeer-gate-campus-karad",
+      "version": "0.1.0",
+      "title": "Ajmeer Gate Campus Karad"
+    },
+    "tools": [
+      {
+        "name": "list_donors",
+        "title": "List donors",
+        "description": "List or search campus donors by name, phone or address. Optionally filter by cluster name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Text to match against donor name, phone or address.",
+              "type": "string"
+            },
+            "cluster": {
+              "description": "Cluster name to filter by.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Maximum number of donors to return (default 25).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_donor",
+        "title": "Get donor details",
+        "description": "Get one donor's profile together with their donation history and total contributed.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "donor_id": {
+              "type": "string",
+              "description": "The donor id returned by list_donors."
+            }
+          },
+          "required": [
+            "donor_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_donations",
+        "title": "List donations",
+        "description": "List donations in a date range, newest first, with donor names, receipt numbers and the total for the range.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from_date": {
+              "description": "Start date, inclusive, as YYYY-MM-DD.",
+              "type": "string"
+            },
+            "to_date": {
+              "description": "End date, inclusive, as YYYY-MM-DD.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Maximum number of donations to return (default 50).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "record_donation",
+        "title": "Record a donation",
+        "description": "Record a new donation for an existing donor. Use list_donors first to find the donor id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "donor_id": {
+              "type": "string",
+              "description": "The donor id the donation belongs to."
+            },
+            "amount": {
+              "type": "number",
+              "description": "Donation amount in rupees."
+            },
+            "donation_date": {
+              "description": "Donation date as YYYY-MM-DD. Defaults to today.",
+              "type": "string"
+            },
+            "receipt_number": {
+              "description": "Receipt number, if one was issued.",
+              "type": "string"
+            },
+            "notes": {
+              "description": "Optional note about the donation.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "donor_id",
+            "amount"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_clusters",
+        "title": "List clusters",
+        "description": "List all donor clusters and their sub-clusters.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_dua_requests",
+        "title": "List dua requests",
+        "description": "List prayer (dua) requests submitted by donors, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "Filter by status, e.g. pending or replied.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Maximum number of requests to return (default 25).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
