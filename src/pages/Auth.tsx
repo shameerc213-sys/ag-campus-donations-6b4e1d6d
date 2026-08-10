@@ -59,7 +59,11 @@ const Auth = () => {
             });
           }
         } else {
-          navigate('/donors');
+          if (nextPath) {
+            window.location.href = nextPath;
+          } else {
+            navigate('/donors');
+          }
         }
       } else {
         const { error } = await signUp(email, password);
