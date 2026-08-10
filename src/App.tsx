@@ -27,6 +27,7 @@ import DonorContacts from "./pages/donor-portal/DonorContacts";
 import DonorDuaRequest from "./pages/donor-portal/DonorDuaRequest";
 import PortalInstall from "./pages/donor-portal/PortalInstall";
 import AdminInstall from "./pages/AdminInstall";
+import OAuthConsent from "./pages/OAuthConsent";
 import AssistantLogin from "./pages/assistant/AssistantLogin";
 import AssistantDuaRequests from "./pages/assistant/AssistantDuaRequests";
 import AssistantInstall from "./pages/assistant/AssistantInstall";
@@ -59,6 +60,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/auth" element={<Auth />} />
+      <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
       <Route path="/admin/install" element={<AdminInstall />} />
       <Route path="/" element={<Navigate to="/portal" replace />} />
       <Route path="/my-donations/:id" element={<PublicDonorView />} />
